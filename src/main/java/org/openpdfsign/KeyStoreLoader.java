@@ -4,6 +4,7 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
@@ -57,7 +58,11 @@ public class KeyStoreLoader {
             PKCS8EncryptedPrivateKeyInfo o = (PKCS8EncryptedPrivateKeyInfo) readObject;
             JceOpenSSLPKCS8DecryptorProviderBuilder builder = new JceOpenSSLPKCS8DecryptorProviderBuilder();
             privateKeyInfo = o.decryptPrivateKeyInfo(builder.build(privateKeyPassword));
-        } else if (readObject instanceof  PrivateKeyInfo) {
+        } else if (readObject instanceof PEMKeyPair) {
+            PEMKeyPair pair = (PEMKeyPair) readObject;
+            privateKeyInfo = pair.getPrivateKeyInfo();
+        }
+        else if (readObject instanceof  PrivateKeyInfo) {
             privateKeyInfo = (PrivateKeyInfo) readObject;
         }
 

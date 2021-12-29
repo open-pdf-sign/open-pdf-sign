@@ -38,7 +38,7 @@ class KeyStoreLoaderTest {
     @Test
     void testLoadKeyStoreFromCrtKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException, UnrecoverableKeyException {
         URL pubKey = getClass().getClassLoader().getResource("cert.crt");
-        URL privKey = getClass().getClassLoader().getResource("key.pem");
+        URL privKey = getClass().getClassLoader().getResource("key_nopass.pem");
 
         byte[] keyStore = KeyStoreLoader.loadKeyStoreFromKeys(Paths.get(pubKey.toURI()), Paths.get(privKey.toURI()), privateKeyPassword, keyStorePassword);
         KeyStore pkcs12 = KeyStore.getInstance("PKCS12");

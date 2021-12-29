@@ -36,21 +36,23 @@ public class CLIApplication {
         //convert to keystore, if not already given
         byte[] keystore = null;
         char[] keystorePassphrase = null;
+        if (!Strings.isStringEmpty(cla.getKeyPassphrase())) {
+            keystorePassphrase = cla.getKeyPassphrase().toCharArray();
+        } else {
+            keystorePassphrase = "123456789".toCharArray();
+        }
         if (!Strings.isStringEmpty(cla.getCertificateFile()) &&
             !Strings.isStringEmpty(cla.getKeyFile())) {
-
             keystore = KeyStoreLoader.loadKeyStoreFromKeys(
                     Paths.get(cla.getCertificateFile()),
                     Paths.get(cla.getKeyFile()),
-                    cla.getKeyPassphrase().toCharArray(),
-                    cla.getKeyPassphrase().toCharArray()
+                    (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
+                    keystorePassphrase
             );
-            keystorePassphrase = cla.getKeyPassphrase().toCharArray();
         }
         else if (!Strings.isStringEmpty(cla.getKeyFile()) &&
                 !Strings.isStringEmpty(cla.getKeyPassphrase())) {
             keystore = Files.readAllBytes(Paths.get(cla.getKeyFile()));
-            keystorePassphrase = cla.getKeyPassphrase().toCharArray();
         }
 
         Path pdfFile = Paths.get(cla.getInputFile());
