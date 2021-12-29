@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Locale;
 
 public class CLIApplication {
 
@@ -32,6 +33,11 @@ public class CLIApplication {
         }
 
         System.out.println("Running with " + cla);
+
+        //load locale, if any
+        if (!Strings.isStringEmpty(cla.getLocale())) {
+            Configuration.getInstance(Locale.forLanguageTag(cla.getLocale()));
+        }
 
         //convert to keystore, if not already given
         byte[] keystore = null;

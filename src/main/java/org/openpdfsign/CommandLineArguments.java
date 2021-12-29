@@ -22,4 +22,7 @@ public class CommandLineArguments extends SignatureParameters {
     @Parameter(required = false, names={"-c", "--certificate"}, description = "certificate (chain) to be used")
     private String certificateFile;
 
+    @Parameter(required = false, names={"-l", "--locale"}, description = "Locale, e.g. de-AT")
+    private String locale;
+
 }

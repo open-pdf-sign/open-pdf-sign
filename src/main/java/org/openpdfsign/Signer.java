@@ -88,7 +88,12 @@ public class Signer {
             // Get the SignedInfo segment that need to be signed.
             fieldParameters.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
             fieldParameters.setSignaturString(signingToken.getKey("alias").getCertificate().getSubject().getPrettyPrintRFC2253());
-            fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+            if (!Strings.isStringEmpty(params.getHint())) {
+                fieldParameters.setHint(params.getHint());
+            }
+            else {
+                fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+            }
 
             signatureParameters.setImageParameters(imageParameters);
 
