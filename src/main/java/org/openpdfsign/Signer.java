@@ -10,6 +10,8 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import org.apache.commons.io.IOUtils;
@@ -22,6 +24,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Signer {
 
@@ -83,7 +88,7 @@ public class Signer {
             // Get the SignedInfo segment that need to be signed.
             fieldParameters.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
             fieldParameters.setSignaturString(signingToken.getKey("alias").getCertificate().getSubject().getPrettyPrintRFC2253());
-            fieldParameters.setHint("Die Echtheit der Signatur kann unter www.signaturprüfung.at überprüft werden.");
+            fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
 
             signatureParameters.setImageParameters(imageParameters);
 
@@ -93,8 +98,13 @@ public class Signer {
         }
 
         //https://gist.github.com/Manouchehri/fd754e402d98430243455713efada710
-        OnlineTSPSource onlineTSPSource = new OnlineTSPSource("http://kstamp.keynectis.com/KSign/");
-        service.setTspSource(onlineTSPSource);
+        CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
+        Map<String, TSPSource> tspSources = new HashMap<>();
+        compositeTSPSource.setTspSources(tspSources);
+        Arrays.stream(Configuration.getInstance().getProperties().getStringArray("tsp_sources")).forEach(source -> {
+            tspSources.put(source, new OnlineTSPSource(source));
+        });
+        service.setTspSource(compositeTSPSource);
 
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, signatureParameters);
 

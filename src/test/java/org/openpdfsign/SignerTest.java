@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Locale;
 
 class SignerTest {
 
@@ -19,6 +20,7 @@ class SignerTest {
     void testSignPdf() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException {
         URL pubKey = getClass().getClassLoader().getResource("netzbeweis.crt");
         URL privKey = getClass().getClassLoader().getResource("netzbeweis.key");
+        Configuration.getInstance(new Locale("de","AT"));
 
         final char[] password = "netzbeweis".toCharArray();
         final char[] keyStorePassword = "987654321".toCharArray();
