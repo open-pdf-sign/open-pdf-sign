@@ -17,10 +17,10 @@ class SignerTest {
 
     @Test
     void testSignPdf() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException {
-        URL pubKey = getClass().getClassLoader().getResource("netzbeweis.crt");
-        URL privKey = getClass().getClassLoader().getResource("netzbeweis.key");
+        URL pubKey = getClass().getClassLoader().getResource("cert.pem");
+        URL privKey = getClass().getClassLoader().getResource("key.pem");
 
-        final char[] password = "netzbeweis".toCharArray();
+        final char[] password = "123456789".toCharArray();
         final char[] keyStorePassword = "987654321".toCharArray();
 
         byte[] keyStore = KeyStoreLoader.loadKeyStoreFromKeys(Paths.get(pubKey.toURI()), Paths.get(privKey.toURI()), password, keyStorePassword);
