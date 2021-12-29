@@ -1,6 +1,7 @@
 package org.openpdfsign;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Strings;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCSException;
@@ -16,14 +17,21 @@ import java.security.cert.CertificateException;
 public class CLIApplication {
 
     public static void main(String[] args) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException {
-        CommandLineArgs cla = new CommandLineArgs();
+        CommandLineArguments cla = new CommandLineArguments();
         JCommander parser = JCommander.newBuilder()
                 .addObject(cla)
                 .build();
-        parser.usage();
 
-        parser.parse(args);
-        System.out.println(cla);
+
+        try {
+            parser.parse(args);
+        }
+        catch(ParameterException ex) {
+            parser.usage();
+            return;
+        }
+
+        System.out.println("Running with " + cla);
 
         //convert to keystore, if not already given
         byte[] keystore = null;
@@ -46,8 +54,9 @@ public class CLIApplication {
         }
 
         Path pdfFile = Paths.get(cla.getInputFile());
+        Path outputFile = Paths.get(cla.getOutputFile());
 
         Signer s = new Signer();
-        s.signPdf(pdfFile, keystore, keystorePassphrase);
+        s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla);
     }
 }

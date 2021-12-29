@@ -1,5 +1,6 @@
 package org.openpdfsign;
 
+import com.beust.jcommander.Strings;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.*;
@@ -16,7 +17,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,8 +24,13 @@ import java.security.KeyStore;
 import java.time.format.DateTimeFormatter;
 
 public class Signer {
-    public void signPdf(Path pdfFile, byte[] keyStore, char[] keyStorePassword) throws IOException {
-        boolean visibleSignature = true;
+
+    //see PDRectangle
+    private static final float POINTS_PER_INCH = 72;
+    private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
+
+    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, SignatureParameters params) throws IOException {
+        boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
         //load PDF file
@@ -52,20 +57,28 @@ public class Signer {
 
         // Initialize visual signature and configure
         if (visibleSignature) {
-            PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
-            int pageCount = pdDocument.getNumberOfPages();
-            pdDocument.close();
-
             SignatureImageParameters imageParameters = new SignatureImageParameters();
             TableSignatureFieldParameters fieldParameters = new TableSignatureFieldParameters();
             imageParameters.setFieldParameters(fieldParameters);
 
-            imageParameters.setImage(new InMemoryDocument((IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("signature.png")))));
+            if (!Strings.isStringEmpty(params.getImageFile())) {
+                imageParameters.setImage(new InMemoryDocument(Files.readAllBytes(Paths.get(params.getImageFile()))));
+            }
+            else {
+                imageParameters.setImage(new InMemoryDocument((IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("signature.png")))));
+            }
 
-            fieldParameters.setPage(pageCount);
-            fieldParameters.setOriginX(50);
-            fieldParameters.setMarginRight(50);
-            fieldParameters.setOriginY(400);
+            if (params.getPage() < 0) {
+                PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
+                int pageCount = pdDocument.getNumberOfPages();
+                fieldParameters.setPage(pageCount + (1 + params.getPage()));
+                pdDocument.close();
+            } else {
+                fieldParameters.setPage(params.getPage());
+            }
+            fieldParameters.setOriginX(params.getLeft() * POINTS_PER_MM * 10f);
+            fieldParameters.setOriginY(params.getTop() * POINTS_PER_MM * 10f);
+            fieldParameters.setWidth(params.getWidth() * POINTS_PER_MM * 10f);
 
             // Get the SignedInfo segment that need to be signed.
             fieldParameters.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
@@ -95,8 +108,6 @@ public class Signer {
         }*/
 
         DSSDocument signedDocument = service.signDocument(toSignDocument, signatureParameters, signatureValue);
-        signedDocument.save("signed2.pdf");
-
-        System.out.println(1);
+        signedDocument.save(outputFile.toAbsolutePath().toString());
     }
 }

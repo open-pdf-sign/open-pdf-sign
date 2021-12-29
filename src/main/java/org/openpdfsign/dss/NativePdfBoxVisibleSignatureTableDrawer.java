@@ -24,6 +24,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.Matrix;
 import org.openpdfsign.TableSignatureFieldParameters;
 import org.vandeseer.easytable.TableDrawer;
+import org.vandeseer.easytable.settings.HorizontalAlignment;
 import org.vandeseer.easytable.settings.VerticalAlignment;
 import org.vandeseer.easytable.structure.Row;
 import org.vandeseer.easytable.structure.Table;
@@ -73,34 +74,32 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
             java.util.logging.Logger.getLogger("org.apache.fontbox").setLevel(java.util.logging.Level.OFF);
 
             //calculate dynamic width, if any
+            final float imageColumnWidth = 75;
+            final float labelColumnWidth = 90;
             float tableWidth = parameters.getFieldParameters().getWidth();
-            if (tableParameters.getMarginRight() > 0) {
-                //get total page width
-                float width = originalPage.getMediaBox().getWidth() - tableParameters.getOriginX() - tableParameters.getMarginRight();
-                tableWidth = width;
-            }
+            tableWidth = Math.max((imageColumnWidth + labelColumnWidth + 50), tableWidth);
 
             // Build the table
             Table myTable = Table.builder()
-                    .addColumnsOfWidth(100, 120, (tableWidth - 100 - 120))
+                    .addColumnsOfWidth(imageColumnWidth, labelColumnWidth, (tableWidth - imageColumnWidth - labelColumnWidth))
                     .backgroundColor(Color.WHITE)
                     .borderWidth(0.75f)
                     .padding(5)
                     .fontSize(8)
-                    .verticalAlignment(VerticalAlignment.MIDDLE)
+                    .verticalAlignment(VerticalAlignment.TOP)
                     .addRow(Row.builder()
-                            .add(ImageCell.builder().image(imageXObject).maxHeight(100).rowSpan(3).build())
-                            .add(TextCell.builder().text("Unterzeichner").font(PDType1Font.HELVETICA_BOLD).build())
+                            .add(ImageCell.builder().image(imageXObject).maxHeight(75).verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).rowSpan(3).build())
+                            .add(TextCell.builder().text("Unterzeichner").font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text("Unterzeichnungszeitpunkt").font(PDType1Font.HELVETICA_BOLD).build())
+                            .add(TextCell.builder().text("Zeitpunkt (UTC)").font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text("Hinweis").font(PDType1Font.HELVETICA_BOLD).build())
+                            .add(TextCell.builder().text("Hinweis").font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getHint()).build())
                             .build())
                     .build();

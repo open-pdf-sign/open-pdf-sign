@@ -6,7 +6,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class CommandLineArgs {
+public class CommandLineArguments extends SignatureParameters {
     @Parameter(required = true, names = {"-i", "--input"}, description = "input pdf file")
     private String inputFile;
 
@@ -21,21 +21,5 @@ public class CommandLineArgs {
 
     @Parameter(required = false, names={"-c", "--certificate"}, description = "certificate (chain) to be used")
     private String certificateFile;
-
-    @Parameter(required = false, names={"--image"}, description = "Image to be placed in signature block")
-    private String imageFile;
-
-    @Parameter(required = false, names={"--page"}, description = "Page where the signature block should be placed. [-1] for last page")
-    private int page;
-
-    @Parameter(required = false, names={"--top"}, description = "Y coordinate of the signature block in cm")
-    private float top;
-
-    @Parameter(required = false, names={"--left"}, description = "X coordinate of the signature block in cm")
-    private float left;
-
-    @Parameter(required = false, names={"--width"}, description = "width of the signature block in cm")
-    private float width;
-
 
 }
