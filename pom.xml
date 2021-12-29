@@ -79,6 +79,12 @@
             <version>5.9</version>
         </dependency>
         <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-service</artifactId>
+            <version>5.9</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.vandeseer</groupId>
             <artifactId>easytable</artifactId>
             <version>0.8.5</version>
