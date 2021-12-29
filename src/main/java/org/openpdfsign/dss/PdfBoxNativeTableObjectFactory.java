@@ -1,4 +1,4 @@
-package org.openpdfsign;
+package org.openpdfsign.dss;
 
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pdf.PDFServiceMode;
@@ -10,22 +10,13 @@ import eu.europa.esig.dss.pdf.visible.SignatureDrawer;
 
 public class PdfBoxNativeTableObjectFactory extends PdfBoxNativeObjectFactory
 {
-    private NativePdfBoxVisibleSignatureTableDrawer.TableSignatureInformation signatureInformation;
-    public PdfBoxNativeTableObjectFactory(NativePdfBoxVisibleSignatureTableDrawer.TableSignatureInformation signatureInformation) {
-        super();
-        this.signatureInformation = signatureInformation;
-    }
-
-    public PdfBoxNativeTableObjectFactory() {
-        super();
-    }
 
     @Override
     public PDFSignatureService newPAdESSignatureService() {
         return new PdfBoxSignatureService(PDFServiceMode.SIGNATURE, new PdfBoxSignatureDrawerFactory() {
             @Override
             public SignatureDrawer getSignatureDrawer(SignatureImageParameters imageParameters) {
-                return new NativePdfBoxVisibleSignatureTableDrawer(signatureInformation);
+                return new NativePdfBoxVisibleSignatureTableDrawer();
             }
         });
     }

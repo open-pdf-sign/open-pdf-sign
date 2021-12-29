@@ -1,4 +1,4 @@
-package org.openpdfsign;
+package org.openpdfsign.dss;
 
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pdf.pdfbox.visible.nativedrawer.NativePdfBoxVisibleSignatureDrawer;
@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.Matrix;
+import org.openpdfsign.TableSignatureFieldParameters;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.settings.VerticalAlignment;
 import org.vandeseer.easytable.structure.Row;
@@ -37,41 +38,43 @@ import java.io.InputStream;
 import java.util.List;
 
 public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisibleSignatureDrawer {
-    TableSignatureInformation tableSignatureInformation;
-
-    public NativePdfBoxVisibleSignatureTableDrawer(TableSignatureInformation tableSignatureInformation) {
-        super();
-        this.tableSignatureInformation = tableSignatureInformation;
-    }
-
 
     @Override
     public void draw() throws IOException {
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PDImageXObject imageXObject = PDImageXObject.createFromByteArray(doc, IOUtils.toByteArray(parameters.getImage().openStream()), parameters.getImage().getName());
 
+            //Get information of type TableSignatureFieldParameters
+            TableSignatureFieldParameters tableParameters = null;
+            if (parameters.getFieldParameters() instanceof TableSignatureFieldParameters) {
+                tableParameters = (TableSignatureFieldParameters) parameters.getFieldParameters();
+            }
+
+            //disable "missing font / rebuild cache" logging
+            java.util.logging.Logger.getLogger("org.apache.pdfbox").setLevel(java.util.logging.Level.OFF);
+            java.util.logging.Logger.getLogger("org.apache.fontbox").setLevel(java.util.logging.Level.OFF);
             // Build the table
             Table myTable = Table.builder()
                     .addColumnsOfWidth(100, 120, 220)
                     .backgroundColor(Color.WHITE)
-                    .borderWidth(1)
+                    .borderWidth(0.75f)
                     .padding(5)
                     .fontSize(8)
                     .verticalAlignment(VerticalAlignment.MIDDLE)
                     .addRow(Row.builder()
                             .add(ImageCell.builder().image(imageXObject).maxHeight(100).rowSpan(3).build())
                             .add(TextCell.builder().text("Unterzeichner").font(PDType1Font.HELVETICA_BOLD).build())
-                            .add(TextCell.builder().text(tableSignatureInformation.getSignaturString()).build())
+                            .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
                             .add(TextCell.builder().text("Unterzeichnungszeitpunkt").font(PDType1Font.HELVETICA_BOLD).build())
-                            .add(TextCell.builder().text(tableSignatureInformation.getSignatureDate()).build())
+                            .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
                             .add(TextCell.builder().text("Hinweis").font(PDType1Font.HELVETICA_BOLD).build())
-                            .add(TextCell.builder().text(tableSignatureInformation.getHint()).build())
+                            .add(TextCell.builder().text(tableParameters.getHint()).build())
                             .build())
                     .build();
 
@@ -113,18 +116,6 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
             appearance.setNormalAppearance(appearanceStream);
             widget.setAppearance(appearance);
 
-
-
-
-            /*try (PDPageContentStream cs = new PDPageContentStream(doc, appearanceStream)) {
-                //rotateSignature(cs, rectangle, dimensionAndPosition);
-                //setFieldBackground(cs, parameters.getBackgroundColor());
-                //setText(cs, dimensionAndPosition, parameters);
-                setImage(cs, doc, dimensionAndPosition, parameters.getImage());
-                // Set up the drawer
-
-            }*/
-
             try (PDPageContentStream cs = new PDPageContentStream(doc, appearanceStream)) {
                 // Set up the drawer
                 TableDrawer tableDrawer = TableDrawer.builder()
@@ -136,12 +127,12 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
 
 
                 // And go for it!
-                //cs.saveGraphicsState();
+                cs.saveGraphicsState();
                 tableDrawer.draw();
-                //cs.transform(Matrix.getRotateInstance(
-//                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getRotation())), 400, 200));
+                cs.transform(Matrix.getRotateInstance(
+                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getRotation())), 400, 200));
 
-  //              cs.restoreGraphicsState();
+                cs.restoreGraphicsState();
 
             }
 
@@ -214,33 +205,4 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
         }
     }
 
-    public static class TableSignatureInformation {
-        private String signatureDate;
-        private String signaturString;
-        private String hint;
-
-        public String getSignatureDate() {
-            return signatureDate;
-        }
-
-        public void setSignatureDate(String signatureDate) {
-            this.signatureDate = signatureDate;
-        }
-
-        public String getSignaturString() {
-            return signaturString;
-        }
-
-        public void setSignaturString(String signaturString) {
-            this.signaturString = signaturString;
-        }
-
-        public String getHint() {
-            return hint;
-        }
-
-        public void setHint(String hint) {
-            this.hint = hint;
-        }
-    }
 }

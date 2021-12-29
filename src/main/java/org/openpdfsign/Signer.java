@@ -7,9 +7,11 @@ import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.*;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
 
 import java.awt.*;
 import java.io.IOException;
@@ -18,9 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 public class Signer {
     public void signPdf(Path pdfFile, byte[] keyStore, char[] keyStorePassword) throws IOException {
@@ -45,12 +45,12 @@ public class Signer {
         signatureParameters.bLevel().setSigningDate(new Date());
         signatureParameters.setSigningCertificate(signingToken.getKey("alias").getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey("alias").getCertificateChain());
-        signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+        signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
         signatureParameters.setPermission(CertificationPermission.CHANGES_PERMITTED);
 
         // Initialize visual signature and configure
         SignatureImageParameters imageParameters = new SignatureImageParameters();
-        SignatureFieldParameters fieldParameters = new SignatureFieldParameters();
+        TableSignatureFieldParameters fieldParameters = new TableSignatureFieldParameters();
         SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
         textParameters.setText("Wurde signiert von NetzBeweis");
         textParameters.setBackgroundColor(Color.green);
@@ -80,12 +80,11 @@ public class Signer {
         PAdESService service = new PAdESService(commonCertificateVerifier);
 
         // Get the SignedInfo segment that need to be signed.
-        NativePdfBoxVisibleSignatureTableDrawer.TableSignatureInformation tableSignatureInformation = new NativePdfBoxVisibleSignatureTableDrawer.TableSignatureInformation();
-        tableSignatureInformation.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
-        tableSignatureInformation.setSignaturString(signingToken.getKey("alias").getCertificate().getSubject().getPrettyPrintRFC2253());
-        tableSignatureInformation.setHint("Die Echtheit der Signatur kann unter www.signaturprüfung.at überprüft werden.");
+        fieldParameters.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
+        fieldParameters.setSignaturString(signingToken.getKey("alias").getCertificate().getSubject().getPrettyPrintRFC2253());
+        fieldParameters.setHint("Die Echtheit der Signatur kann unter www.signaturprüfung.at überprüft werden.");
 
-        PdfBoxNativeObjectFactory pdfBoxNativeObjectFactory = new PdfBoxNativeTableObjectFactory(tableSignatureInformation);
+        PdfBoxNativeObjectFactory pdfBoxNativeObjectFactory = new PdfBoxNativeTableObjectFactory();
         service.setPdfObjFactory(pdfBoxNativeObjectFactory);
 
 
