@@ -11,6 +11,7 @@ import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
 
@@ -24,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Signer {
     public void signPdf(Path pdfFile, byte[] keyStore, char[] keyStorePassword) throws IOException {
-        boolean visibleSignature = false;
+        boolean visibleSignature = true;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
         //load PDF file
@@ -58,12 +59,9 @@ public class Signer {
             SignatureImageParameters imageParameters = new SignatureImageParameters();
             TableSignatureFieldParameters fieldParameters = new TableSignatureFieldParameters();
             imageParameters.setFieldParameters(fieldParameters);
-            try {
-                imageParameters.setImage(new InMemoryDocument(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource("signature.png").toURI())), "a.svg", MimeType.SVG));
 
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
+            imageParameters.setImage(new InMemoryDocument((IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("signature.png")))));
+
             fieldParameters.setPage(pageCount);
             fieldParameters.setOriginX(50);
             fieldParameters.setMarginRight(50);
