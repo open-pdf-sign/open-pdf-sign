@@ -51,12 +51,6 @@ public class Signer {
         // Initialize visual signature and configure
         SignatureImageParameters imageParameters = new SignatureImageParameters();
         TableSignatureFieldParameters fieldParameters = new TableSignatureFieldParameters();
-        SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
-        textParameters.setText("Wurde signiert von NetzBeweis");
-        textParameters.setBackgroundColor(Color.green);
-        textParameters.setPadding(3);
-        textParameters.setSignerTextPosition(SignerTextPosition.BOTTOM);
-        imageParameters.setTextParameters(textParameters);
         imageParameters.setFieldParameters(fieldParameters);
         try {
             imageParameters.setImage(new InMemoryDocument(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource("signature.png").toURI())), "a.svg", MimeType.SVG));
@@ -66,9 +60,9 @@ public class Signer {
         }
         fieldParameters.setPage(pageCount);
         fieldParameters.setOriginX(50);
+        fieldParameters.setMarginRight(50);
         fieldParameters.setOriginY(400);
-        fieldParameters.setWidth(300);
-        fieldParameters.setHeight(200);
+
         signatureParameters.setImageParameters(imageParameters);
 
         //https://github.com/vandeseer/easytable/blob/master/src/test/java/org/vandeseer/MinimumWorkingExample.java - Table drawer

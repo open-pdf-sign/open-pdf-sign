@@ -50,12 +50,39 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                 tableParameters = (TableSignatureFieldParameters) parameters.getFieldParameters();
             }
 
+
+            int pageNumber = parameters.getFieldParameters().getPage() - ImageUtils.DEFAULT_FIRST_PAGE;
+            PDPage originalPage = document.getPage(pageNumber);
+
+
+            // create a new page
+            PDPage page = new PDPage(originalPage.getMediaBox());
+            doc.addPage(page);
+            PDAcroForm acroForm = new PDAcroForm(doc);
+            doc.getDocumentCatalog().setAcroForm(acroForm);
+            PDSignatureField signatureField = new PDSignatureField(acroForm);
+            PDAnnotationWidget widget = signatureField.getWidgets().get(0);
+            List<PDField> acroFormFields = acroForm.getFields();
+            acroForm.setSignaturesExist(true);
+            acroForm.setAppendOnly(true);
+            acroForm.getCOSObject().setDirect(true);
+            acroFormFields.add(signatureField);
+
             //disable "missing font / rebuild cache" logging
             java.util.logging.Logger.getLogger("org.apache.pdfbox").setLevel(java.util.logging.Level.OFF);
             java.util.logging.Logger.getLogger("org.apache.fontbox").setLevel(java.util.logging.Level.OFF);
+
+            //calculate dynamic width, if any
+            float tableWidth = parameters.getFieldParameters().getWidth();
+            if (tableParameters.getMarginRight() > 0) {
+                //get total page width
+                float width = originalPage.getMediaBox().getWidth() - tableParameters.getOriginX() - tableParameters.getMarginRight();
+                tableWidth = width;
+            }
+
             // Build the table
             Table myTable = Table.builder()
-                    .addColumnsOfWidth(100, 120, 220)
+                    .addColumnsOfWidth(100, 120, (tableWidth - 100 - 120))
                     .backgroundColor(Color.WHITE)
                     .borderWidth(0.75f)
                     .padding(5)
@@ -79,26 +106,10 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                     .build();
 
 
-            int pageNumber = parameters.getFieldParameters().getPage() - ImageUtils.DEFAULT_FIRST_PAGE;
-            PDPage originalPage = document.getPage(pageNumber);
             SignatureFieldDimensionAndPosition dimensionAndPosition = buildSignatureFieldBox();
 
             dimensionAndPosition.setBoxHeight(myTable.getHeight()); //
             dimensionAndPosition.setBoxWidth(myTable.getWidth()); //
-
-            // create a new page
-            PDPage page = new PDPage(originalPage.getMediaBox());
-            doc.addPage(page);
-            PDAcroForm acroForm = new PDAcroForm(doc);
-            doc.getDocumentCatalog().setAcroForm(acroForm);
-            PDSignatureField signatureField = new PDSignatureField(acroForm);
-            PDAnnotationWidget widget = signatureField.getWidgets().get(0);
-            List<PDField> acroFormFields = acroForm.getFields();
-            acroForm.setSignaturesExist(true);
-            acroForm.setAppendOnly(true);
-            acroForm.getCOSObject().setDirect(true);
-            acroFormFields.add(signatureField);
-
             PDRectangle rectangle = getPdRectangle(dimensionAndPosition, page);
             widget.setRectangle(rectangle);
 

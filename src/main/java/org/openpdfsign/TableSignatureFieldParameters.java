@@ -6,6 +6,7 @@ public class TableSignatureFieldParameters extends SignatureFieldParameters  {
     private String signatureDate;
     private String signaturString;
     private String hint;
+    private float marginRight;
 
     public String getSignatureDate() {
         return signatureDate;
@@ -29,5 +30,13 @@ public class TableSignatureFieldParameters extends SignatureFieldParameters  {
 
     public void setHint(String hint) {
         this.hint = hint;
+    }
+
+    public float getMarginRight() {
+        return marginRight;
+    }
+
+    public void setMarginRight(float marginRight) {
+        this.marginRight = marginRight;
     }
 }
