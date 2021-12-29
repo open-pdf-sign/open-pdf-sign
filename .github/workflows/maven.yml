@@ -28,5 +28,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: open-pdf-sign
-        path: target/openpdfsign-0.1.0-SNAPSHOT-jar-with-dependencies.war
+        path: target/openpdfsign-0.1.0-SNAPSHOT-jar-with-dependencies.jar
         retention-days: 30
