@@ -13,6 +13,7 @@ import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
+import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -50,8 +51,12 @@ public class Signer {
         //PAdES parameters
         PAdESSignatureParameters signatureParameters = new PAdESSignatureParameters();
         //signatureParameters.bLevel().setSigningDate(new Date());
-        signatureParameters.setSigningCertificate(signingToken.getKey("alias").getCertificate());
-        signatureParameters.setCertificateChain(signingToken.getKey("alias").getCertificateChain());
+        String keyAlias = "alias";
+        if (signingToken.getKeys().get(0) instanceof KSPrivateKeyEntry) {
+            keyAlias = ((KSPrivateKeyEntry) signingToken.getKeys().get(0)).getAlias();
+        };
+        signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
+        signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
         signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
         signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
 
@@ -87,7 +92,7 @@ public class Signer {
 
             // Get the SignedInfo segment that need to be signed.
             fieldParameters.setSignatureDate(DateTimeFormatter.ISO_INSTANT.format(signatureParameters.getSigningDate().toInstant()));
-            fieldParameters.setSignaturString(signingToken.getKey("alias").getCertificate().getSubject().getPrettyPrintRFC2253());
+            fieldParameters.setSignaturString(signingToken.getKey(keyAlias).getCertificate().getSubject().getPrettyPrintRFC2253());
             if (!Strings.isStringEmpty(params.getHint())) {
                 fieldParameters.setHint(params.getHint());
             }
@@ -116,7 +121,7 @@ public class Signer {
         // This function obtains the signature value for signed information using the
         // private key and specified algorithm
         DigestAlgorithm digestAlgorithm = signatureParameters.getDigestAlgorithm();
-        SignatureValue signatureValue = signingToken.sign(dataToSign, digestAlgorithm, signingToken.getKey("alias"));
+        SignatureValue signatureValue = signingToken.sign(dataToSign, digestAlgorithm, signingToken.getKey(keyAlias));
 
         /*if (service.isValidSignatureValue(dataToSign, signatureValue, signingToken.getKey("alias").getCertificate())) {
             System.out.println("is true");
