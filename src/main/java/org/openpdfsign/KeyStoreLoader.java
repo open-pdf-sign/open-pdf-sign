@@ -20,6 +20,8 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KeyStoreLoader {
     /**
@@ -39,15 +41,26 @@ public class KeyStoreLoader {
         //load key
         Security.addProvider(new BouncyCastleProvider());
 
+        List<X509Certificate> certs = new ArrayList<>();
+
         X509Certificate cert = null;
         try {
             PEMParser pemParser = new PEMParser(Files.newBufferedReader(certificatePath));
-            X509CertificateHolder certHolder = (X509CertificateHolder) pemParser.readObject();
-            cert = new JcaX509CertificateConverter().getCertificate( certHolder );;
+            while (true) {
+                X509CertificateHolder certHolder = (X509CertificateHolder) pemParser.readObject();
+                if (certHolder == null) {
+                    break;
+                }
+                cert = new JcaX509CertificateConverter().getCertificate(certHolder);
+                certs.add(cert);
+            }
         } catch (IOException e) {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             cert = (X509Certificate) factory.generateCertificate(Files.newInputStream(certificatePath));
+            certs.add(cert);
         }
+
+
 
 
         PEMParser privPemParser = new PEMParser(Files.newBufferedReader(privateKeyPath));
@@ -76,7 +89,7 @@ public class KeyStoreLoader {
         KeyStore keystore = KeyStore.getInstance("PKCS12");
         keystore.load(null);
         keystore.setKeyEntry("alias", privateKey, keyStorePassword,
-                new java.security.cert.Certificate[]{cert});
+                certs.toArray(new java.security.cert.Certificate[]{}));
         keystore.store(bos, keyStorePassword);
         bos.close();
         byte[] bytes = bos.toByteArray();
