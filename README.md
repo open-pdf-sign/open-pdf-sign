@@ -2,6 +2,10 @@
 
 CLI application for signing PDF files.
 
+## Requirements
+* Maven (https://maven.apache.org/)
+* JDK 8
+
 ## Build
 
 ```bash
