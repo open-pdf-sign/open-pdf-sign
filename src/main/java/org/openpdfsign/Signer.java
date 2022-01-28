@@ -35,7 +35,7 @@ public class Signer {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, SignatureParameters params) throws IOException {
+    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, boolean binary, SignatureParameters params) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
@@ -54,7 +54,8 @@ public class Signer {
         String keyAlias = "alias";
         if (signingToken.getKeys().get(0) instanceof KSPrivateKeyEntry) {
             keyAlias = ((KSPrivateKeyEntry) signingToken.getKeys().get(0)).getAlias();
-        };
+        }
+        ;
         signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
         signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
@@ -73,8 +74,7 @@ public class Signer {
 
             if (!Strings.isStringEmpty(params.getImageFile())) {
                 imageParameters.setImage(new InMemoryDocument(Files.readAllBytes(Paths.get(params.getImageFile()))));
-            }
-            else {
+            } else {
                 imageParameters.setImage(new InMemoryDocument((IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream("signature.png")))));
             }
 
@@ -95,8 +95,7 @@ public class Signer {
             fieldParameters.setSignaturString(signingToken.getKey(keyAlias).getCertificate().getSubject().getPrettyPrintRFC2253());
             if (!Strings.isStringEmpty(params.getHint())) {
                 fieldParameters.setHint(params.getHint());
-            }
-            else {
+            } else {
                 fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
             }
 
@@ -128,6 +127,10 @@ public class Signer {
         }*/
 
         DSSDocument signedDocument = service.signDocument(toSignDocument, signatureParameters, signatureValue);
-        signedDocument.save(outputFile.toAbsolutePath().toString());
+        if (binary) {
+            signedDocument.writeTo(System.out);
+        } else {
+            signedDocument.save(outputFile.toAbsolutePath().toString());
+        }
     }
 }

@@ -10,7 +10,7 @@ public class CommandLineArguments extends SignatureParameters {
     @Parameter(required = true, names = {"-i", "--input"}, description = "input pdf file")
     private String inputFile;
 
-    @Parameter(required = true, names = {"-o", "--output"}, description = "output pdf file")
+    @Parameter(required = false, names = {"-o", "--output"}, description = "output pdf file")
     private String outputFile;
 
     @Parameter(required = true, names = {"-k", "--key"}, description = "signature key file or keystore")
@@ -25,4 +25,6 @@ public class CommandLineArguments extends SignatureParameters {
     @Parameter(required = false, names={"-l", "--locale"}, description = "Locale, e.g. de-AT")
     private String locale;
 
+    @Parameter(required = false, names={"-b", "--binary"}, description = "binary output of PDF")
+    private boolean binaryOutput = false;
 }
