@@ -28,6 +28,7 @@ public class CLIApplication {
             parser.parse(args);
         }
         catch(ParameterException ex) {
+            ex.printStackTrace();
             parser.usage();
             return;
         }
@@ -65,6 +66,6 @@ public class CLIApplication {
         Path outputFile = Paths.get(cla.getOutputFile());
 
         Signer s = new Signer();
-        s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla);
+        s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput(), cla);
     }
 }
