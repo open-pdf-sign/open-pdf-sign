@@ -3,13 +3,12 @@
 CLI application for signing PDF files.
 ## Features
 * Visible PDF signature in PDF (multi language support)
-* Supported Signatures: 
-  * Pades
-  * baseline_t
-  * TBD baseline_lt 
-  * TBD baseline_lta 
+* Supported Signature type: PAdES
+* Supported Signature profiles: 
+  * BASELINE-B
+  * BASELINE-T
+  * To be evaluated: BASELINE-LT, BASELINE-LTA
 * TBD NGINX support to serve all files digitally signed with installed domain certificate
-* 
 
 ## Get Started
 
