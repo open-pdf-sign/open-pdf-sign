@@ -58,7 +58,11 @@ public class Signer {
         ;
         signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
-        signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+        if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+        } else {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+        }
         signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
 
         // Create common certificate verifier
@@ -107,13 +111,24 @@ public class Signer {
         }
 
         //https://gist.github.com/Manouchehri/fd754e402d98430243455713efada710
-        CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
-        Map<String, TSPSource> tspSources = new HashMap<>();
-        compositeTSPSource.setTspSources(tspSources);
-        Arrays.stream(Configuration.getInstance().getProperties().getStringArray("tsp_sources")).forEach(source -> {
-            tspSources.put(source, new OnlineTSPSource(source));
-        });
-        service.setTspSource(compositeTSPSource);
+        //only use TSP source, if parameter is set
+        //if it is set to an url, us this
+        //otherwise, default
+        if (params.getUseTimestamp() || params.getTSA() != null) {
+            CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
+            Map<String, TSPSource> tspSources = new HashMap<>();
+            compositeTSPSource.setTspSources(tspSources);
+            if (params.getTSA().isEmpty()) {
+                Arrays.stream(Configuration.getInstance().getProperties().getStringArray("tsp_sources")).forEach(source -> {
+                    tspSources.put(source, new OnlineTSPSource(source));
+                });
+            } else {
+                params.getTSA().stream().forEach(source -> {
+                    tspSources.put(source, new OnlineTSPSource(source));
+                });
+            }
+            service.setTspSource(compositeTSPSource);
+        }
 
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, signatureParameters);
 

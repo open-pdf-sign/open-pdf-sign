@@ -4,6 +4,9 @@ import com.beust.jcommander.Parameter;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @Getter
 @Setter
 public class SignatureParameters {
@@ -25,6 +28,9 @@ public class SignatureParameters {
     @Parameter(required = false, names={"--hint"}, description = "text to be displayed in signature field")
     private String hint;
 
-    @Parameter(required = false, names={"--tsp"}, description = "use TSP source")
-    private String tsp;
+    @Parameter(required = false, names={"--timestamp"}, description = "include signed timestamp")
+    private Boolean useTimestamp = false;
+
+    @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")
+    private List<String> TSA = new LinkedList<>();
 }
