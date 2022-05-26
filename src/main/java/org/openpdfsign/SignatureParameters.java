@@ -33,4 +33,7 @@ public class SignatureParameters {
 
     @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")
     private List<String> TSA = new LinkedList<>();
+
+    @Parameter(required = false, names = {"--timezone"}, description = "use specific timezone for time info, e.g. Europe/Vienna")
+    private String timezone;
 }

@@ -99,6 +99,10 @@ public class Signer {
             // Get the SignedInfo segment that need to be signed.
             // respect local timezone
             DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault());
+            // user-provided timezone, if any
+            if (params.getTimezone() != null) {
+                formatter = formatter.withZone(ZoneId.of(params.getTimezone()));
+            }
             fieldParameters.setSignatureDate(formatter.format(signatureParameters.getSigningDate().toInstant()));
             fieldParameters.setSignaturString(signingToken.getKey(keyAlias).getCertificate().getSubject().getPrettyPrintRFC2253());
             if (!Strings.isStringEmpty(params.getHint())) {
