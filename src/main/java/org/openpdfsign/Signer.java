@@ -15,6 +15,7 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+@Slf4j
 public class Signer {
 
     //see PDRectangle
@@ -50,6 +52,7 @@ public class Signer {
         //load certificate and private key
         JKSSignatureToken signingToken = new JKSSignatureToken(keyStore, new KeyStore.PasswordProtection(keyStorePassword));
 
+        log.debug("Keystore created for signing");
         //PAdES parameters
         PAdESSignatureParameters signatureParameters = new PAdESSignatureParameters();
         //signatureParameters.bLevel().setSigningDate(new Date());
@@ -72,6 +75,8 @@ public class Signer {
         // Create PAdESService for signature
         PAdESService service = new PAdESService(commonCertificateVerifier);
 
+        log.debug("Signature service initialized");
+
         // Initialize visual signature and configure
         if (visibleSignature) {
             SignatureImageParameters imageParameters = new SignatureImageParameters();
@@ -89,6 +94,8 @@ public class Signer {
                 int pageCount = pdDocument.getNumberOfPages();
                 fieldParameters.setPage(pageCount + (1 + params.getPage()));
                 pdDocument.close();
+                log.debug("PDF page count: " + pageCount);
+
             } else {
                 fieldParameters.setPage(params.getPage());
             }
@@ -116,6 +123,7 @@ public class Signer {
 
             PdfBoxNativeObjectFactory pdfBoxNativeObjectFactory = new PdfBoxNativeTableObjectFactory();
             service.setPdfObjFactory(pdfBoxNativeObjectFactory);
+            log.debug("Visible signature parameters set");
         }
 
         //https://gist.github.com/Manouchehri/fd754e402d98430243455713efada710
@@ -143,13 +151,16 @@ public class Signer {
         // This function obtains the signature value for signed information using the
         // private key and specified algorithm
         DigestAlgorithm digestAlgorithm = signatureParameters.getDigestAlgorithm();
+        log.debug("Data to be signed loaded");
         SignatureValue signatureValue = signingToken.sign(dataToSign, digestAlgorithm, signingToken.getKey(keyAlias));
 
         /*if (service.isValidSignatureValue(dataToSign, signatureValue, signingToken.getKey("alias").getCertificate())) {
-            System.out.println("is true");
+            log.debug("is true");
         }*/
+        log.debug("Signature value calculated");
 
         DSSDocument signedDocument = service.signDocument(toSignDocument, signatureParameters, signatureValue);
+        log.debug("Document signing complete");
         if (binary) {
             signedDocument.writeTo(System.out);
         } else {

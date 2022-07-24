@@ -3,6 +3,7 @@ package org.openpdfsign;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Strings;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCSException;
 
@@ -15,9 +16,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Locale;
 
+@Slf4j
 public class CLIApplication {
 
     public static void main(String[] args) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException {
+        log.debug("Starting open-pdf-sign");
         CommandLineArguments cla = new CommandLineArguments();
         JCommander parser = JCommander.newBuilder()
                 .addObject(cla)
@@ -26,6 +29,14 @@ public class CLIApplication {
 
         try {
             parser.parse(args);
+
+            //either binary or output file has to be set
+            if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
+                System.out.println("Either binary output or output file has to be set");
+                parser.usage();
+                return;
+            }
+
         }
         catch(ParameterException ex) {
             ex.printStackTrace();
@@ -33,7 +44,7 @@ public class CLIApplication {
             return;
         }
 
-        //System.out.println("Running with " + cla);
+        log.debug("Running with parameters: " + cla);
 
         //load locale, if any
         if (!Strings.isStringEmpty(cla.getLocale())) {
@@ -56,6 +67,8 @@ public class CLIApplication {
                     (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
                     keystorePassphrase
             );
+            log.debug("Key and Certificate loaded");
+
         }
         else if (!Strings.isStringEmpty(cla.getKeyFile()) &&
                 !Strings.isStringEmpty(cla.getKeyPassphrase())) {
@@ -63,7 +76,7 @@ public class CLIApplication {
         }
 
         Path pdfFile = Paths.get(cla.getInputFile());
-        Path outputFile = Paths.get(cla.getOutputFile());
+        Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
 
         Signer s = new Signer();
         s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput(), cla);
