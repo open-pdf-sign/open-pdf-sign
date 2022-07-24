@@ -33,7 +33,7 @@ public class CLIApplication {
             return;
         }
 
-        System.out.println("Running with " + cla);
+        //System.out.println("Running with " + cla);
 
         //load locale, if any
         if (!Strings.isStringEmpty(cla.getLocale())) {
