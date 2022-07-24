@@ -14,6 +14,8 @@ CLI application for signing PDF files.
 
 Download the latest jar archive from the [GitHub releases page](https://github.com/open-pdf-sign/open-pdf-sign/releases)
 
+Make sure that Java is installed in at least version 8.
+
 ### Run
 ```
 java -jar open-pdf-sign.jar -i input.pdf -o output.pdf -c certificate.crt -k keyfile.pem -p key_passphrase --page -1 --locale de-AT
