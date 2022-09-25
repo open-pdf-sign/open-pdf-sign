@@ -4,8 +4,10 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Strings;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.pkcs.PKCSException;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +21,7 @@ import java.util.Locale;
 @Slf4j
 public class CLIApplication {
 
-    public static void main(String[] args) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException {
+    public static void main(String[] args) throws Exception {
         log.debug("Starting open-pdf-sign");
         CommandLineArguments cla = new CommandLineArguments();
         JCommander parser = JCommander.newBuilder()
@@ -31,7 +33,7 @@ public class CLIApplication {
             parser.parse(args);
 
             //either binary or output file has to be set
-            if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
+            if (!cla.isBinaryOutput() && cla.getOutputFile() == null && cla.getHostname() == null && cla.getPort() <= 0) {
                 System.out.println("Either binary output or output file has to be set");
                 parser.usage();
                 return;
@@ -75,10 +77,30 @@ public class CLIApplication {
             keystore = Files.readAllBytes(Paths.get(cla.getKeyFile()));
         }
 
-        Path pdfFile = Paths.get(cla.getInputFile());
-        Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
+        if (cla.getPort() > 0 || cla.getHostname() != null) {
+            //set args + keys for later use
+            ServerConfigHolder.getInstance().setParams(cla);
+            ServerConfigHolder.getInstance().getKeystores().put(cla.getKeyFile(), keystore);
+            ServerConfigHolder.getInstance().setKeystorePassphrase(keystorePassphrase);
 
-        Signer s = new Signer();
-        s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput(), cla);
+            Server server = new Server();
+            ServerConnector connector = new ServerConnector(server);
+            ServletHandler servletHandler = new ServletHandler();
+            server.setHandler(servletHandler);
+            servletHandler.addServletWithMapping(SignerServlet.class,"/v1/sign");
+            connector.setPort(cla.getPort() > 0 ? cla.getPort() : 8090);
+            connector.setHost(cla.getHostname() != null ? cla.getHostname() : "localhost");
+            server.setConnectors(new Connector[] {connector});
+            server.start();
+            log.info("Server launched " + connector.getHost() + ":" + connector.getPort());
+            return;
+        }
+        else {
+            Path pdfFile = Paths.get(cla.getInputFile());
+            Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
+
+            Signer s = new Signer();
+            s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput() ? System.out : null, cla);
+        }
     }
 }

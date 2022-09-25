@@ -1,0 +1,33 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'open-pdf-sign'
+  description: Sign pdfs
+
+paths:
+  /sign:
+    post:
+      summary: Sign a PDF
+      requestBody:
+        description: Information about signature
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                input:
+                  type: string
+                  example: /tmp/pdf-to-sign.pdf
+                key:
+                  type: string
+                  example: /etc/letsencrypt/live/openpdfsign.org/privkey.pem
+                  description: Key to use for signature in case multiple loaded.
+                    Has to be loaded. If none  given, first loaded key will be used.
+      responses:
+        '200':
+          description: The signed PDF attached
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binaryl
