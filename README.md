@@ -83,6 +83,31 @@ java -jar open-pdf-sign.jar -i input.pdf -o output.pdf \
 If the `page` parameter is specified, a visible signature
 will be placed on the specified page.
 
+### Usage in server mode
+
+You can also run open-pdf-sign as a server application in order to
+only load certificates once and easily integrate it in applications where
+CLI invocations are not possible. Simply add the `--port` or `--hostname`
+parameters, e.g.
+
+```bash
+java -jar open-pdf-sign.jar -i input.pdf -o output.pdf \
+  -c /etc/letsencrypt/live/openpdfsign.org/fullchain.pem \
+  -k /etc/letsencrypt/live/openpdfsign.org/privkey.pem
+  --port 8090 --hostname 127.0.0.1
+```
+
+Then, PDFs can be signed via the [specified](src/main/resources/openapi.yml) `/pdf`
+endpoint:
+
+```bash
+curl --location --request POST 'http://localhost:8090/v1/sign' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "input": "/path/to/pdf.pdf"
+}'
+```
+
 ## Development
 
 ### Requirements

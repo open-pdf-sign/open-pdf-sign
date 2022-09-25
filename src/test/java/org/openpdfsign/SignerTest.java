@@ -40,7 +40,7 @@ class SignerTest {
         params.setImageFile(image.toAbsolutePath().toString());
 
         Signer signer = new Signer();
-        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, true, params);
+        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, null, params);
         System.out.println(2 + demoPdf.toString());
     }
 }
