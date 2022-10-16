@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,9 +19,18 @@ public class SignerServlet extends HttpServlet {
     ObjectMapper mapper = new ObjectMapper();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-
-        Path path = Paths.get(req.getRequestURI());
         String keyPath = ServerConfigHolder.getInstance().getKeystores().keySet().stream().findFirst().get();
+
+        HashSet<String> headers = new HashSet<>(Collections.list(req.getHeaderNames()));
+        Path path;
+        if (headers.contains("X-Open-Pdf-Sign-File")) {
+            path = Paths.get(req.getHeader("X-Open-Pdf-Sign-File"));
+        }
+        else {
+            path = Paths.get(req.getRequestURI());
+        }
+
+
 
         Signer s = new Signer();
         res.setStatus(HttpServletResponse.SC_OK);
