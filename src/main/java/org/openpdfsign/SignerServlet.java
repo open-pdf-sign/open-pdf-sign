@@ -18,7 +18,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SignerServlet extends HttpServlet {
     ObjectMapper mapper = new ObjectMapper();
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 
+        Path path = Paths.get(req.getRequestURI());
+        String keyPath = ServerConfigHolder.getInstance().getKeystores().keySet().stream().findFirst().get();
+
+        Signer s = new Signer();
+        res.setStatus(HttpServletResponse.SC_OK);
+        res.setHeader("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"");
+        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyPath), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams());
+        log.debug("signed " + path + " with " + keyPath);
+        res.getOutputStream().flush();
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {

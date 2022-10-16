@@ -87,7 +87,7 @@ public class CLIApplication {
             ServerConnector connector = new ServerConnector(server);
             ServletHandler servletHandler = new ServletHandler();
             server.setHandler(servletHandler);
-            servletHandler.addServletWithMapping(SignerServlet.class,"/v1/sign");
+            servletHandler.addServletWithMapping(SignerServlet.class,"/*");
             connector.setPort(cla.getPort() > 0 ? cla.getPort() : 8090);
             connector.setHost(cla.getHostname() != null ? cla.getHostname() : "localhost");
             server.setConnectors(new Connector[] {connector});
