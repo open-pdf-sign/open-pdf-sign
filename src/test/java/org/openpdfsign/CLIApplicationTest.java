@@ -51,11 +51,11 @@ class CLIApplicationTest {
         };
         CommandLineArguments cla = CLIApplication.parseArguments(args);
         assertEquals(5, cla.getCertificates().size());
-        assertEquals("_",cla.getCertificates().get(0));
-        assertEquals("exampleA.com",cla.getCertificates().get(0));
-        assertEquals("exampleB.com",cla.getCertificates().get(0));
-        assertEquals("exampleC.com",cla.getCertificates().get(0));
-        assertEquals("example.com",cla.getCertificates().get(0));
+        assertEquals("_",cla.getCertificates().get(0).getHost());
+        assertEquals("exampleA.com",cla.getCertificates().get(1).getHost());
+        assertEquals("exampleB.com",cla.getCertificates().get(2).getHost());
+        assertEquals("exampleC.com",cla.getCertificates().get(3).getHost());
+        assertEquals("example.com",cla.getCertificates().get(4).getHost());
 
     }
 
