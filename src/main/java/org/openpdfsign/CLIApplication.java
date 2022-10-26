@@ -42,7 +42,7 @@ public class CLIApplication {
 
         //convert to keystore, if not already given
         byte[] keystore = null;
-        char[] keystorePassphrase = null;
+        char[] keystorePassphrase;
         if (!Strings.isStringEmpty(cla.getKeyPassphrase())) {
             keystorePassphrase = cla.getKeyPassphrase().toCharArray();
         } else {
@@ -61,13 +61,33 @@ public class CLIApplication {
         }
         else if (!Strings.isStringEmpty(cla.getKeyFile()) &&
                 !Strings.isStringEmpty(cla.getKeyPassphrase())) {
+            //already keystore being loaded
             keystore = Files.readAllBytes(Paths.get(cla.getKeyFile()));
         }
 
         if (cla.getPort() > 0 || cla.getHostname() != null) {
             //set args + keys for later use
             ServerConfigHolder.getInstance().setParams(cla);
-            ServerConfigHolder.getInstance().getKeystores().put(cla.getKeyFile(), keystore);
+
+            if (cla.getCertificates() != null && !cla.getCertificates().isEmpty()) {
+                //load all the keys
+                cla.getCertificates().stream().forEach(cp -> {
+                    try {
+                        byte[] lKeystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                                Paths.get(cp.getCertificateFile()),
+                                Paths.get(cp.getKeyFile()),
+                                (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
+                                keystorePassphrase
+                        );
+                        ServerConfigHolder.getInstance().getKeystores().put(cp.getHost(), lKeystore);
+                    } catch (Exception e) {
+                        log.error("could not load key from " + cp.getKeyFile() + " / " + cp.getCertificateFile());
+                    }
+                });
+            }
+            else {
+                ServerConfigHolder.getInstance().getKeystores().put("_", keystore);
+            }
             ServerConfigHolder.getInstance().setKeystorePassphrase(keystorePassphrase);
 
             Server server = new Server();
@@ -105,6 +125,7 @@ public class CLIApplication {
             if (!Strings.isStringEmpty(cla.getConfigFile())) {
                 //try to load and parse config
                 try {
+                    log.debug("loading config file from " + cla.getConfigFile());
                     String yamlSource = FileUtils.readFileToString(new File(cla.getConfigFile()), "utf-8");
                     ObjectMapper mapper = new YAMLMapper();
                     CommandLineArguments yamlCommandlineArgs = mapper.readValue(yamlSource, CommandLineArguments.class);
@@ -128,7 +149,7 @@ public class CLIApplication {
                         }
                     }
 
-                    return yamlCommandlineArgs;
+                    cla = yamlCommandlineArgs;
                 } catch(MismatchedInputException e) {
                     System.out.println("Error parsing configuration file");
                     System.out.println(e.getMessage());
@@ -140,11 +161,35 @@ public class CLIApplication {
                 }
             }
 
-            //either binary or output file has to be set
-            if (!cla.isBinaryOutput() && cla.getOutputFile() == null && cla.getHostname() == null && cla.getPort() <= 0) {
-                System.out.println("Either binary output or output file has to be set");
-                parser.usage();
-                return null;
+            if (cla.getHostname() != null && cla.getPort() > 0) {
+                //server mode
+                if ((cla.getCertificates() == null || cla.getCertificates().isEmpty()) &&
+                        cla.getKeyFile() == null) {
+                    System.out.println("no key file provided for server mode");
+                    return null;
+                }
+            }
+            else {
+                //input file needs to be given
+                if (cla.getInputFile() == null || cla.getInputFile().isEmpty()) {
+                    System.out.println("input file missing");
+                    parser.usage();
+                    return null;
+                }
+
+                //key needs to be given
+                if (cla.getKeyFile() == null || cla.getKeyFile().isEmpty()) {
+                    System.out.println("key file needs to be provided");
+                    parser.usage();
+                    return null;
+                }
+
+                //either binary or output file has to be set
+                if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
+                    System.out.println("Either binary output or output file has to be set");
+                    parser.usage();
+                    return null;
+                }
             }
 
         }

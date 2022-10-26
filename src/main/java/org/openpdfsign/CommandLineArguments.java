@@ -41,7 +41,7 @@ public class CommandLineArguments extends SignatureParameters {
     private int port;
 
     @Parameter(required = false, names={"--host"}, description = "run as server with the given hostname")
-    @JsonProperty(value = "hostname")
+    @JsonProperty(value = "host")
     private String hostname;
 
     @Parameter(required = false, names={"--config"}, description = "use a configuration file")

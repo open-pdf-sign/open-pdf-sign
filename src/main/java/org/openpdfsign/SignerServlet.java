@@ -19,24 +19,57 @@ public class SignerServlet extends HttpServlet {
     ObjectMapper mapper = new ObjectMapper();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-        String keyPath = ServerConfigHolder.getInstance().getKeystores().keySet().stream().findFirst().get();
+
+        /**
+         * proxy_set_header Host $http_host;
+         * proxy_set_header X-Open-Pdf-Sign-Nginx-Version 1.0.0;
+         * proxy_set_header X-Open-Pdf-Sign-File: $document_root$uri
+         */
+        String keyName = null;
 
         HashSet<String> headers = new HashSet<>(Collections.list(req.getHeaderNames()));
         Path path;
-        if (headers.contains("X-Open-Pdf-Sign-File")) {
-            path = Paths.get(req.getHeader("X-Open-Pdf-Sign-File"));
+        if (!headers.contains("X-Open-Pdf-Sign-Nginx-Version")) {
+            res.setStatus(400);
+            res.getOutputStream().println("X-Open-Pdf-Sign-Nginx-Version header missing");
+            res.getOutputStream().flush();
+            log.debug("received request with missing X-Open-Pdf-Sign-Nginx-Version header");
+            return;
         }
-        else {
-            path = Paths.get(req.getRequestURI());
+        if (!headers.contains("X-Open-Pdf-Sign-File")) {
+            res.setStatus(400);
+            res.getOutputStream().println("X-Open-Pdf-Sign-File header missing");
+            res.getOutputStream().flush();
+            log.debug("received request without filename");
+            return;
         }
+        path = Paths.get(req.getHeader("X-Open-Pdf-Sign-File"));
 
+        if (headers.contains("Host")) {
+            //try to find matching key, or default
+            String hostname = req.getHeader("Host");
+            if (ServerConfigHolder.getInstance().getKeystores().containsKey(hostname)) {
+                keyName = hostname;
+            }
+            else if (ServerConfigHolder.getInstance().getKeystores().containsKey("_")) {
+                keyName = "_";
+            }
+            else {
+                //key not found, exception
+                res.setStatus(400);
+                res.getOutputStream().println("no key loaded for host");
+                res.getOutputStream().flush();
+                log.debug("received request with invalid host header, no default key: ", hostname);
+                return;
+            }
+        }
 
 
         Signer s = new Signer();
         res.setStatus(HttpServletResponse.SC_OK);
         res.setHeader("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"");
-        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyPath), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams());
-        log.debug("signed " + path + " with " + keyPath);
+        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyName), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams());
+        log.debug("signed " + path + " with " + keyName);
         res.getOutputStream().flush();
     }
 
