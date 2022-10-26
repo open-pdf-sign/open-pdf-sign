@@ -3,19 +3,22 @@ package org.openpdfsign;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Strings;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+import java.util.ListIterator;
 import java.util.Locale;
 
 @Slf4j
@@ -23,26 +26,10 @@ public class CLIApplication {
 
     public static void main(String[] args) throws Exception {
         log.debug("Starting open-pdf-sign");
-        CommandLineArguments cla = new CommandLineArguments();
-        JCommander parser = JCommander.newBuilder()
-                .addObject(cla)
-                .build();
+        CommandLineArguments cla = parseArguments(args);
 
-
-        try {
-            parser.parse(args);
-
-            //either binary or output file has to be set
-            if (!cla.isBinaryOutput() && cla.getOutputFile() == null && cla.getHostname() == null && cla.getPort() <= 0) {
-                System.out.println("Either binary output or output file has to be set");
-                parser.usage();
-                return;
-            }
-
-        }
-        catch(ParameterException ex) {
-            ex.printStackTrace();
-            parser.usage();
+        if (cla == null) {
+            System.exit(1);
             return;
         }
 
@@ -102,5 +89,71 @@ public class CLIApplication {
             Signer s = new Signer();
             s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput() ? System.out : null, cla);
         }
+    }
+
+    public static CommandLineArguments parseArguments(String[] args) {
+        CommandLineArguments cla = new CommandLineArguments();
+        JCommander parser = JCommander.newBuilder()
+                .addObject(cla)
+                .build();
+
+
+        try {
+            parser.parse(args);
+
+            //if config is passed, may use this
+            if (!Strings.isStringEmpty(cla.getConfigFile())) {
+                //try to load and parse config
+                try {
+                    String yamlSource = FileUtils.readFileToString(new File(cla.getConfigFile()), "utf-8");
+                    ObjectMapper mapper = new YAMLMapper();
+                    CommandLineArguments yamlCommandlineArgs = mapper.readValue(yamlSource, CommandLineArguments.class);
+
+                    //in case of space-separated hosts, split
+                    if (yamlCommandlineArgs.getCertificates() != null &&
+                            !yamlCommandlineArgs.getCertificates().isEmpty()) {
+                        ListIterator<CommandLineArguments.HostKeyCertificatePair> iterator = yamlCommandlineArgs.getCertificates().listIterator();
+                        while (iterator.hasNext()) {
+                            //split if space-separated
+                            CommandLineArguments.HostKeyCertificatePair pair = iterator.next();
+                            if (pair.getHost().contains(" ")) {
+                                CommandLineArguments.HostKeyCertificatePair newPair = new CommandLineArguments.HostKeyCertificatePair();
+                                newPair.setCertificateFile(pair.getCertificateFile());
+                                newPair.setKeyFile(pair.getKeyFile());
+                                newPair.setHost(pair.getHost().split(" ",2)[1]);
+                                iterator.add(newPair);
+                                iterator.previous();
+                            }
+                            pair.setHost(pair.getHost().split(" ")[0]);
+                        }
+                    }
+
+                    return yamlCommandlineArgs;
+                } catch(MismatchedInputException e) {
+                    System.out.println("Error parsing configuration file");
+                    System.out.println(e.getMessage());
+                    return null;
+                }
+                catch (IOException e) {
+                    System.out.println("provided config file could not be found");
+                    return null;
+                }
+            }
+
+            //either binary or output file has to be set
+            if (!cla.isBinaryOutput() && cla.getOutputFile() == null && cla.getHostname() == null && cla.getPort() <= 0) {
+                System.out.println("Either binary output or output file has to be set");
+                parser.usage();
+                return null;
+            }
+
+        }
+        catch(ParameterException ex) {
+            ex.printStackTrace();
+            parser.usage();
+            return null;
+        }
+
+        return cla;
     }
 }
