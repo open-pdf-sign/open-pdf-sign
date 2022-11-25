@@ -3,44 +3,33 @@ package org.openpdfsign;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Strings;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.pkcs.PKCSException;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHandler;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
+import java.util.ListIterator;
 import java.util.Locale;
 
 @Slf4j
 public class CLIApplication {
 
-    public static void main(String[] args) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException {
+    public static void main(String[] args) throws Exception {
         log.debug("Starting open-pdf-sign");
-        CommandLineArguments cla = new CommandLineArguments();
-        JCommander parser = JCommander.newBuilder()
-                .addObject(cla)
-                .build();
+        CommandLineArguments cla = parseArguments(args);
 
-
-        try {
-            parser.parse(args);
-
-            //either binary or output file has to be set
-            if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
-                System.out.println("Either binary output or output file has to be set");
-                parser.usage();
-                return;
-            }
-
-        }
-        catch(ParameterException ex) {
-            ex.printStackTrace();
-            parser.usage();
+        if (cla == null) {
+            System.exit(1);
             return;
         }
 
@@ -53,7 +42,7 @@ public class CLIApplication {
 
         //convert to keystore, if not already given
         byte[] keystore = null;
-        char[] keystorePassphrase = null;
+        char[] keystorePassphrase;
         if (!Strings.isStringEmpty(cla.getKeyPassphrase())) {
             keystorePassphrase = cla.getKeyPassphrase().toCharArray();
         } else {
@@ -72,13 +61,144 @@ public class CLIApplication {
         }
         else if (!Strings.isStringEmpty(cla.getKeyFile()) &&
                 !Strings.isStringEmpty(cla.getKeyPassphrase())) {
+            //already keystore being loaded
             keystore = Files.readAllBytes(Paths.get(cla.getKeyFile()));
         }
 
-        Path pdfFile = Paths.get(cla.getInputFile());
-        Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
+        if (cla.getPort() > 0 || cla.getHostname() != null) {
+            //set args + keys for later use
+            ServerConfigHolder.getInstance().setParams(cla);
 
-        Signer s = new Signer();
-        s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput(), cla);
+            if (cla.getCertificates() != null && !cla.getCertificates().isEmpty()) {
+                //load all the keys
+                cla.getCertificates().stream().forEach(cp -> {
+                    try {
+                        byte[] lKeystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                                Paths.get(cp.getCertificateFile()),
+                                Paths.get(cp.getKeyFile()),
+                                (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
+                                keystorePassphrase
+                        );
+                        ServerConfigHolder.getInstance().getKeystores().put(cp.getHost(), lKeystore);
+                    } catch (Exception e) {
+                        log.error("could not load key from " + cp.getKeyFile() + " / " + cp.getCertificateFile());
+                    }
+                });
+            }
+            else {
+                ServerConfigHolder.getInstance().getKeystores().put("_", keystore);
+            }
+            ServerConfigHolder.getInstance().setKeystorePassphrase(keystorePassphrase);
+
+            Server server = new Server();
+            ServerConnector connector = new ServerConnector(server);
+            ServletHandler servletHandler = new ServletHandler();
+            server.setHandler(servletHandler);
+            servletHandler.addServletWithMapping(SignerServlet.class,"/*");
+            connector.setPort(cla.getPort() > 0 ? cla.getPort() : 8090);
+            connector.setHost(cla.getHostname() != null ? cla.getHostname() : "localhost");
+            server.setConnectors(new Connector[] {connector});
+            server.start();
+            log.info("Server launched " + connector.getHost() + ":" + connector.getPort());
+            return;
+        }
+        else {
+            Path pdfFile = Paths.get(cla.getInputFile());
+            Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
+
+            Signer s = new Signer();
+            s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput() ? System.out : null, cla);
+        }
+    }
+
+    public static CommandLineArguments parseArguments(String[] args) {
+        CommandLineArguments cla = new CommandLineArguments();
+        JCommander parser = JCommander.newBuilder()
+                .addObject(cla)
+                .build();
+
+
+        try {
+            parser.parse(args);
+
+            //if config is passed, may use this
+            if (!Strings.isStringEmpty(cla.getConfigFile())) {
+                //try to load and parse config
+                try {
+                    log.debug("loading config file from " + cla.getConfigFile());
+                    String yamlSource = FileUtils.readFileToString(new File(cla.getConfigFile()), "utf-8");
+                    ObjectMapper mapper = new YAMLMapper();
+                    CommandLineArguments yamlCommandlineArgs = mapper.readValue(yamlSource, CommandLineArguments.class);
+
+                    //in case of space-separated hosts, split
+                    if (yamlCommandlineArgs.getCertificates() != null &&
+                            !yamlCommandlineArgs.getCertificates().isEmpty()) {
+                        ListIterator<CommandLineArguments.HostKeyCertificatePair> iterator = yamlCommandlineArgs.getCertificates().listIterator();
+                        while (iterator.hasNext()) {
+                            //split if space-separated
+                            CommandLineArguments.HostKeyCertificatePair pair = iterator.next();
+                            if (pair.getHost().contains(" ")) {
+                                CommandLineArguments.HostKeyCertificatePair newPair = new CommandLineArguments.HostKeyCertificatePair();
+                                newPair.setCertificateFile(pair.getCertificateFile());
+                                newPair.setKeyFile(pair.getKeyFile());
+                                newPair.setHost(pair.getHost().split(" ",2)[1]);
+                                iterator.add(newPair);
+                                iterator.previous();
+                            }
+                            pair.setHost(pair.getHost().split(" ")[0]);
+                        }
+                    }
+
+                    cla = yamlCommandlineArgs;
+                } catch(MismatchedInputException e) {
+                    System.out.println("Error parsing configuration file");
+                    System.out.println(e.getMessage());
+                    return null;
+                }
+                catch (IOException e) {
+                    System.out.println("provided config file could not be found");
+                    return null;
+                }
+            }
+
+            if (cla.getHostname() != null && cla.getPort() > 0) {
+                //server mode
+                if ((cla.getCertificates() == null || cla.getCertificates().isEmpty()) &&
+                        cla.getKeyFile() == null) {
+                    System.out.println("no key file provided for server mode");
+                    return null;
+                }
+            }
+            else {
+                //input file needs to be given
+                if (cla.getInputFile() == null || cla.getInputFile().isEmpty()) {
+                    System.out.println("input file missing");
+                    parser.usage();
+                    return null;
+                }
+
+                //key needs to be given
+                if (cla.getKeyFile() == null || cla.getKeyFile().isEmpty()) {
+                    System.out.println("key file needs to be provided");
+                    parser.usage();
+                    return null;
+                }
+
+                //either binary or output file has to be set
+                if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
+                    System.out.println("Either binary output or output file has to be set");
+                    parser.usage();
+                    return null;
+                }
+            }
+
+        }
+        catch(ParameterException ex) {
+            ex.printStackTrace();
+            parser.usage();
+            return null;
+        }
+
+        return cla;
     }
 }

@@ -21,6 +21,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,7 +40,7 @@ public class Signer {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, boolean binary, SignatureParameters params) throws IOException {
+    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
@@ -161,8 +162,8 @@ public class Signer {
 
         DSSDocument signedDocument = service.signDocument(toSignDocument, signatureParameters, signatureValue);
         log.debug("Document signing complete");
-        if (binary) {
-            signedDocument.writeTo(System.out);
+        if (binaryOutput != null) {
+            signedDocument.writeTo(binaryOutput);
         } else {
             signedDocument.save(outputFile.toAbsolutePath().toString());
         }

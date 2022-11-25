@@ -1,0 +1,17 @@
+# default location: /etc/openpdfsign/config.yml
+# CLI invoke like: java -jar open-pdf-sign.jar --config /etc/openpdfsign/config.yml
+
+port: 8081 # port where open-pdf-sign is listening
+host: 127.0.0.1 # host address where open-pdf-sign server is listening
+# page: -1 # if not set, no visible signature
+# timestamp: false
+certificates:
+  - host: _ # default case
+    key: /etc/letsencrypt/live/example.com/key.pem
+    certificate: /etc/letsencrypt/live/example.com/fullchaim.pem
+  - host: exampleA.com exampleB.com exampleC.com # space separated, as in nginx conf
+    key: /etc/letsencrypt/live/example.com/key.pem
+    certificate: /etc/letsencrypt/live/example.com/fullchaim.pem
+  - host: example.com
+    key: /etc/letsencrypt/live/example.com/key.pem
+    certificate: /etc/letsencrypt/live/example.com/fullchaim.pem

@@ -1,6 +1,7 @@
 package org.openpdfsign;
 
 import com.beust.jcommander.Parameter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ public class SignatureParameters {
     private String imageFile;
 
     @Parameter(required = false, names={"--page"}, description = "Page where the signature block should be placed. [-1] for last page")
+    @JsonProperty(value = "page")
     private Integer page;
 
     @Parameter(required = false, names={"--top"}, description = "Y coordinate of the signature block in cm")
@@ -29,6 +31,7 @@ public class SignatureParameters {
     private String hint;
 
     @Parameter(required = false, names={"--timestamp"}, description = "include signed timestamp")
+    @JsonProperty("timestamp")
     private Boolean useTimestamp = false;
 
     @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")

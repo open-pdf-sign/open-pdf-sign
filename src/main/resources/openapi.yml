@@ -1,0 +1,68 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'open-pdf-sign server mode API'
+  description: Sign pdfs via server
+servers:
+  - url: http://localhost:8090
+paths:
+  /:
+    get:
+      summary: Sign a PDF - endpoint for nginx
+      parameters:
+        - in: header
+          name: X-Open-Pdf-Sign-Nginx-Version
+          schema:
+            type: string
+          example: 1.0.0
+          description: Version of nginx open-pdf-sign helper
+        - in: header
+          name: X-Open-Pdf-Sign-File
+          schema:
+            type: string
+          example: /var/www/site/x.pdf
+          description: Path of PDF
+        - in: header
+          name: Host
+          schema:
+            type: string
+          example: example.com
+          description: Hostname to use, needs to have loaded certificate
+      responses:
+        '200':
+          description: The signed PDF attached
+          content:
+            applocation/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No file of the given path, or no access rights
+
+    post:
+      summary: Sign a PDF
+      requestBody:
+        description: Information about signature
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                input:
+                  type: string
+                  example: /tmp/pdf-to-sign.pdf
+                key:
+                  type: string
+                  example: example.com
+                  description: Key to use for signature in case multiple loaded.
+                    Has to be loaded. If none  given, first loaded key will be used.
+      responses:
+        '200':
+          description: The signed PDF attached
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No file of the given path, or no access rights
