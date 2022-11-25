@@ -4,6 +4,7 @@ CLI application for signing PDF files.
 
 ## Features
 * Visible PDF signature in PDF (multi language support)
+* Invoke via CLI or via starting a server
 * Supported Signature type: PAdES
 * Supported Signature profiles: 
   * BASELINE-B
@@ -29,13 +30,17 @@ Usage:
       Default: false
     -c, --certificate
       certificate (chain) to be used
+    --config
+      use a configuration file
     --hint
       text to be displayed in signature field
+    --host
+      run as server with the given hostname
     --image
       Image to be placed in signature block
-  * -i, --input
+    -i, --input
       input pdf file
-  * -k, --key
+    -k, --key
       signature key file or keystore
     --left
       X coordinate of the signature block in cm
@@ -48,6 +53,9 @@ Usage:
       Page where the signature block should be placed. [-1] for last page
     -p, --passphrase
       passphrase for the signature key or keystore
+    --port
+      run as server with the given port
+      Default: 8090
     --timestamp
       include signed timestamp
       Default: false
@@ -60,9 +68,6 @@ Usage:
       use specific time stamping authority as source (if multiple given, will 
       be used in given order as fallback)
       Default: []
-    -v, --verbose
-      verbose output
-      Default: false
     --width
       width of the signature block in cm
       Default: 10.0
@@ -101,11 +106,20 @@ Then, PDFs can be signed via the [specified](src/main/resources/openapi.yml) `/p
 endpoint:
 
 ```bash
-curl --location --request POST 'http://localhost:8090/v1/sign' \
+curl --location --request POST 'http://localhost:8090/' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "input": "/path/to/pdf.pdf"
 }'
+```
+
+### Using a config file
+
+Instead of CLI parameters, you can also submit a configuration file with
+the same parameters and the possibility to lead multiple
+keys, as shown in [this example](src/test/resources/test-config.yml)
+
+java -jar open-pdf-sign.jar --config /path/to/config.yaml
 ```
 
 ## Development
