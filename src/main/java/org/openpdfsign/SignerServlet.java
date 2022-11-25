@@ -64,6 +64,11 @@ public class SignerServlet extends HttpServlet {
             }
         }
 
+        if (!path.toFile().exists()) {
+            res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            res.getOutputStream().flush();
+            return;
+        }
 
         Signer s = new Signer();
         res.setStatus(HttpServletResponse.SC_OK);
@@ -97,6 +102,23 @@ public class SignerServlet extends HttpServlet {
             res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             res.getOutputStream().print(mapper.writeValueAsString(errorMap));
             return;
+        }
+
+        if (keyPath != null) {
+            if (ServerConfigHolder.getInstance().getKeystores().containsKey(keyPath)) {
+                //key matches
+            }
+            else if (ServerConfigHolder.getInstance().getKeystores().containsKey("_")) {
+                keyPath = "_";
+            }
+            else {
+                //key not found, exception
+                res.setStatus(400);
+                res.getOutputStream().println("no key loaded for host");
+                res.getOutputStream().flush();
+                log.debug("received request with invalid host header, no default key: ", keyPath);
+                return;
+            }
         }
 
         if (!path.toFile().exists()) {
