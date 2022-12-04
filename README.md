@@ -1,6 +1,9 @@
 # open-pdf-sign
 
-CLI application for signing PDF files.
+The `open-pdf-sign` CLI application allows to
+easily sign PDF files from the commandline. Signatures
+can be invisible or visible, and visible signatures can be 
+customized. 
 
 ## Features
 * Visible PDF signature in PDF (multi language support)
