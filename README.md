@@ -138,4 +138,6 @@ mvn package
 
 ## License
 
-TBD, mostly Apache2
+This project is licensed under the Apache 2.0-License.  
+The code contained in the [org/openpdfsign/dss subfolder](https://github.com/open-pdf-sign/open-pdf-sign/tree/master/src/main/java/org/openpdfsign/dss)
+extends and modifies code from the [dss project](https://github.com/esig/dss/) which is licensed under the [LGPL-2.1 license](https://github.com/esig/dss/blob/master/LICENSE).
