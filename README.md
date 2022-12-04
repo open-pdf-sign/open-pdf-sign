@@ -93,7 +93,21 @@ java -jar open-pdf-sign.jar -i input.pdf -o output.pdf \
 ### Visible signatures
 
 If the `page` parameter is specified, a visible signature
-will be placed on the specified page.
+will be placed on the specified page. For example, running
+
+```bash
+java -jar open-pdf-sign.jar -i input.pdf -o output.pdf \
+     -c certificate.crt \
+     -k key.pem \
+     --page -1 --logo mylogo.png \
+     --hint "You can check the validity at signaturpruefung.gv.at"
+```
+
+will place a visible signature looking similar to the image below
+on the last page (`-1`) of the PDF document.
+
+![signature image](https://www.openpdfsign.org/images/signature.png)
+
 
 ### Usage in server mode
 
