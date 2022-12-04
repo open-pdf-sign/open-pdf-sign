@@ -119,6 +119,7 @@ Instead of CLI parameters, you can also submit a configuration file with
 the same parameters and the possibility to lead multiple
 keys, as shown in [this example](src/test/resources/test-config.yml)
 
+```bash
 java -jar open-pdf-sign.jar --config /path/to/config.yaml
 ```
 
