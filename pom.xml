@@ -25,14 +25,8 @@
         <org.apache.pdfbox-version>2.0.26</org.apache.pdfbox-version>
         <org.eclipse.jetty-version>9.4.49.v20220914</org.eclipse.jetty-version>
         <jackson.version>2.13.2</jackson.version>
+        <dss.version>5.11.1</dss.version>
     </properties>
-    <repositories>
-        <repository>
-            <id>cefdigital</id>
-            <name>cefdigital</name>
-            <url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
@@ -90,27 +84,27 @@
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-pades</artifactId>
-            <version>5.9</version>
+            <version>${dss.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-pades-pdfbox</artifactId>
-            <version>5.9</version>
+            <version>${dss.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-token</artifactId>
-            <version>5.9</version>
+            <version>${dss.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-utils-apache-commons</artifactId>
-            <version>5.9</version>
+            <version>${dss.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-service</artifactId>
-            <version>5.9</version>
+            <version>${dss.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.beust/jcommander -->
         <dependency>
