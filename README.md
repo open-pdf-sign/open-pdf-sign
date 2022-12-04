@@ -13,7 +13,11 @@ CLI application for signing PDF files.
 
 ## Get Started
 
-Download the latest jar archive from the [GitHub releases page](https://github.com/open-pdf-sign/open-pdf-sign/releases)
+Download the latest jar archive from the [GitHub releases page](https://github.com/open-pdf-sign/open-pdf-sign/releases) or in your terminal:
+
+```bash
+curl -L https://github.com/open-pdf-sign/open-pdf-sign/releases/latest/download/open-pdf-sign.jar -o open-pdf-sign.jar
+```
 
 Make sure that Java is installed in at least version 8.
 
