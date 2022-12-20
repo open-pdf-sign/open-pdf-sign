@@ -99,7 +99,7 @@ will be placed on the specified page. For example, running
 java -jar open-pdf-sign.jar -i input.pdf -o output.pdf \
      -c certificate.crt \
      -k key.pem \
-     --page -1 --logo mylogo.png \
+     --page -1 --image mylogo.png \
      --hint "You can check the validity at signaturpruefung.gv.at"
 ```
 
