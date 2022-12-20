@@ -16,6 +16,31 @@ customized.
 
 ## Get Started
 
+### With Nix
+
+Since this pull request, the project is available through [Nix][nix website].
+
+Nix can be summarized as a cross-platform universal package manager that utilizes a
+purely functional deployment model where software is installed into unique 
+directories generated through cryptographic hashes.
+
+You can either create a temporary development shell where the `open-pdf-sign`
+command will be available by doing:
+
+```shell
+nix-shell -p open-pdf-sign
+open-pdf-sign -i input.pdf -o output.pdf -c certificate.crt -k keyfile.pem -p key_passphrase --page -1 --locale de-AT
+```
+
+As an alternative and if you enable the upcoming [`flake feature`][nix flake feature],
+you can remotely run `open-pdf-sign` by doing:
+
+```shell
+nix run github:Nixos/nixpkgs#open-pdf-sign -- -i input.pdf -o output.pdf -c certificate.crt -k keyfile.pem -p key_passphrase --page -1 --locale de-AT
+```
+
+### Without Nix
+
 Download the latest jar archive from the [GitHub releases page](https://github.com/open-pdf-sign/open-pdf-sign/releases) or in your terminal:
 
 ```bash
@@ -162,3 +187,6 @@ mvn package
 This project is licensed under the Apache 2.0-License.  
 The code contained in the [org/openpdfsign/dss subfolder](https://github.com/open-pdf-sign/open-pdf-sign/tree/master/src/main/java/org/openpdfsign/dss)
 extends and modifies code from the [dss project](https://github.com/esig/dss/) which is licensed under the [LGPL-2.1 license](https://github.com/esig/dss/blob/master/LICENSE).
+
+[nix website]: https://nixos.org/
+[nix flake feature]: https://nixos.wiki/wiki/Flakes
