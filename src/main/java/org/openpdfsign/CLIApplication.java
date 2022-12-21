@@ -29,6 +29,7 @@ public class CLIApplication {
         CommandLineArguments cla = parseArguments(args);
 
         if (cla == null) {
+            System.out.println("Try '--help' or '-h' for more information.");
             System.exit(1);
             return;
         }
@@ -121,7 +122,13 @@ public class CLIApplication {
         try {
             parser.parse(args);
 
-            //if config is passed, may use this
+            // show help page
+            if (cla.isHelp()) {
+                parser.usage();
+                System.exit(0);
+            }
+
+            // if config is passed, may use this
             if (!Strings.isStringEmpty(cla.getConfigFile())) {
                 //try to load and parse config
                 try {
@@ -173,21 +180,18 @@ public class CLIApplication {
                 //input file needs to be given
                 if (cla.getInputFile() == null || cla.getInputFile().isEmpty()) {
                     System.out.println("input file missing");
-                    parser.usage();
                     return null;
                 }
 
                 //key needs to be given
                 if (cla.getKeyFile() == null || cla.getKeyFile().isEmpty()) {
                     System.out.println("key file needs to be provided");
-                    parser.usage();
                     return null;
                 }
 
                 //either binary or output file has to be set
                 if (!cla.isBinaryOutput() && cla.getOutputFile() == null) {
                     System.out.println("Either binary output or output file has to be set");
-                    parser.usage();
                     return null;
                 }
             }
@@ -195,7 +199,6 @@ public class CLIApplication {
         }
         catch(ParameterException ex) {
             ex.printStackTrace();
-            parser.usage();
             return null;
         }
 

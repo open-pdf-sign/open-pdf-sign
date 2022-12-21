@@ -13,7 +13,11 @@ import java.util.ArrayList;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CommandLineArguments extends SignatureParameters {
-    @Parameter(required = false, names = {"-i", "--input"}, description = "input pdf file")
+
+    @Parameter(required = false, names = { "--help", "-h" }, description = "prints this page")
+    private boolean help = false;
+
+    @Parameter(required = false, names = { "-i", "--input" }, description = "input pdf file")
     @JsonProperty(value = "input", required = true)
     private String inputFile;
 
