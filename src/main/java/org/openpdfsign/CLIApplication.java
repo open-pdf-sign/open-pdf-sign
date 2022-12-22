@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Scanner;
 
 @Slf4j
 public class CLIApplication {
@@ -51,13 +52,26 @@ public class CLIApplication {
             keystorePassphrase = "123456789".toCharArray();
         }
         if (!Strings.isStringEmpty(cla.getCertificateFile()) &&
-            !Strings.isStringEmpty(cla.getKeyFile())) {
-            keystore = KeyStoreLoader.loadKeyStoreFromKeys(
-                    Paths.get(cla.getCertificateFile()),
-                    Paths.get(cla.getKeyFile()),
-                    (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
-                    keystorePassphrase
-            );
+                !Strings.isStringEmpty(cla.getKeyFile())) {
+            try {
+                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                        Paths.get(cla.getCertificateFile()),
+                        Paths.get(cla.getKeyFile()),
+                        (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
+                        keystorePassphrase
+                );
+            } catch (KeyStoreLoader.KeyIsNeededException e) {
+                //load key from stdin if not provided
+                System.out.print("Please provide passphrase for private key file> ");
+                Scanner in = new Scanner(System.in);
+                String userPassphrase = in.nextLine();
+                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                        Paths.get(cla.getCertificateFile()),
+                        Paths.get(cla.getKeyFile()),
+                        userPassphrase.toCharArray(),
+                        keystorePassphrase
+                );
+            }
             log.debug("Key and Certificate loaded");
 
         }

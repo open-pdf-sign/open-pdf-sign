@@ -22,7 +22,7 @@ class KeyStoreLoaderTest {
     private final char[] keyStorePassword = "987654321".toCharArray();
 
     @Test
-    void testLoadKeyStoreFromPemKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException, UnrecoverableKeyException {
+    void testLoadKeyStoreFromPemKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException, UnrecoverableKeyException, KeyStoreLoader.KeyIsNeededException {
         URL pubKey = getClass().getClassLoader().getResource("cert.pem");
         URL privKey = getClass().getClassLoader().getResource("key.pem");
 
@@ -36,7 +36,17 @@ class KeyStoreLoaderTest {
     }
 
     @Test
-    void testLoadKeyStoreFromCrtKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException, UnrecoverableKeyException {
+    void testLoadKeyWithMissingPassword() {
+        URL pubKey = getClass().getClassLoader().getResource("cert.pem");
+        URL privKey = getClass().getClassLoader().getResource("key.pem");
+
+        assertThrows(KeyStoreLoader.KeyIsNeededException.class,  () -> {
+            KeyStoreLoader.loadKeyStoreFromKeys(Paths.get(pubKey.toURI()), Paths.get(privKey.toURI()), null, keyStorePassword);
+        });
+    }
+
+    @Test
+    void testLoadKeyStoreFromCrtKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, OperatorCreationException, PKCSException, UnrecoverableKeyException, KeyStoreLoader.KeyIsNeededException {
         URL pubKey = getClass().getClassLoader().getResource("cert.crt");
         URL privKey = getClass().getClassLoader().getResource("key_nopass.pem");
 
