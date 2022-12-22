@@ -37,7 +37,7 @@ public class KeyStoreLoader {
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] loadKeyStoreFromKeys(Path certificatePath, Path privateKeyPath, char[] privateKeyPassword, char[] keyStorePassword) throws IOException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException, NoSuchAlgorithmException {
+    public static byte[] loadKeyStoreFromKeys(Path certificatePath, Path privateKeyPath, char[] privateKeyPassword, char[] keyStorePassword) throws IOException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException, NoSuchAlgorithmException, KeyIsNeededException {
         //load key
         Security.addProvider(new BouncyCastleProvider());
 
@@ -68,6 +68,10 @@ public class KeyStoreLoader {
         Object readObject = privPemParser.readObject();
         PrivateKeyInfo privateKeyInfo = null;
         if (readObject instanceof PKCS8EncryptedPrivateKeyInfo) {
+            //throw exception if key is needed but no passphrase provided
+            if (privateKeyPassword == null) {
+                throw new KeyIsNeededException();
+            }
             PKCS8EncryptedPrivateKeyInfo o = (PKCS8EncryptedPrivateKeyInfo) readObject;
             JceOpenSSLPKCS8DecryptorProviderBuilder builder = new JceOpenSSLPKCS8DecryptorProviderBuilder();
             privateKeyInfo = o.decryptPrivateKeyInfo(builder.build(privateKeyPassword));
@@ -94,5 +98,9 @@ public class KeyStoreLoader {
         bos.close();
         byte[] bytes = bos.toByteArray();
         return bytes;
+    }
+
+    public static class KeyIsNeededException extends Exception {
+
     }
 }

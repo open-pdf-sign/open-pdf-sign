@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Scanner;
 
 @Slf4j
 public class CLIApplication {
@@ -50,13 +52,26 @@ public class CLIApplication {
             keystorePassphrase = "123456789".toCharArray();
         }
         if (!Strings.isStringEmpty(cla.getCertificateFile()) &&
-            !Strings.isStringEmpty(cla.getKeyFile())) {
-            keystore = KeyStoreLoader.loadKeyStoreFromKeys(
-                    Paths.get(cla.getCertificateFile()),
-                    Paths.get(cla.getKeyFile()),
-                    (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
-                    keystorePassphrase
-            );
+                !Strings.isStringEmpty(cla.getKeyFile())) {
+            try {
+                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                        Paths.get(cla.getCertificateFile()),
+                        Paths.get(cla.getKeyFile()),
+                        (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
+                        keystorePassphrase
+                );
+            } catch (KeyStoreLoader.KeyIsNeededException e) {
+                //load key from stdin if not provided
+                System.out.print("Please provide passphrase for private key file> ");
+                Scanner in = new Scanner(System.in);
+                String userPassphrase = in.nextLine();
+                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                        Paths.get(cla.getCertificateFile()),
+                        Paths.get(cla.getKeyFile()),
+                        userPassphrase.toCharArray(),
+                        keystorePassphrase
+                );
+            }
             log.debug("Key and Certificate loaded");
 
         }
@@ -156,7 +171,38 @@ public class CLIApplication {
                         }
                     }
 
+                    //combine, command line overrides yaml
+                    try {
+                        CommandLineArguments defaults = new CommandLineArguments();
+
+                        PropertyUtils.describe(cla).entrySet().stream()
+                                .filter(e -> {
+                                    //only override if not null and not default
+                                    try {
+                                        if (e.getValue() == null ||
+                                                e.getValue() == PropertyUtils.getProperty(defaults, e.getKey()) ||
+                                                e.getValue().equals(PropertyUtils.getProperty(defaults, e.getKey()))) {
+                                            return false;
+                                        }
+                                        return true;
+
+                                    } catch (Exception ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                })
+                                .filter(e -> !e.getKey().equals("class"))
+                                .forEach(e -> {
+                                    try {
+                                        PropertyUtils.setProperty(yamlCommandlineArgs, e.getKey(), e.getValue());
+                                    } catch (Exception ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                });
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                     cla = yamlCommandlineArgs;
+
                 } catch(MismatchedInputException e) {
                     System.out.println("Error parsing configuration file");
                     System.out.println(e.getMessage());

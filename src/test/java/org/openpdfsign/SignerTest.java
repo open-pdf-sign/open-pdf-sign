@@ -21,7 +21,7 @@ import java.util.Locale;
 class SignerTest {
 
     @Test
-    void testSignPdf() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException {
+    void testSignPdf() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException, KeyStoreLoader.KeyIsNeededException {
         URL pubKey = getClass().getClassLoader().getResource("cert.pem");
         URL privKey = getClass().getClassLoader().getResource("key.pem");
         Configuration.getInstance(new Locale("en","AT"));

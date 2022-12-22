@@ -22,6 +22,9 @@ curl --location --output open-pdf-sign.jar \
   https://github.com/open-pdf-sign/open-pdf-sign/releases/latest/download/open-pdf-sign.jar
 ```
 
+Alternatively, open-pdf-sign is also available on [nix](https://github.com/NixOS/nixpkgs/tree/master/pkgs/tools/misc/open-pdf-sign),
+a wrapper is available on [npm](https://www.npmjs.com/package/open-pdf-sign), and alongside a installer for [nginx](https://github.com/open-pdf-sign/open-pdf-sign-configurator).
+
 Make sure that Java is installed in at least version 8.
 
 ### Run
@@ -160,4 +163,6 @@ mvn package
 
 This project is licensed under the [Apache 2.0-License](LICENSE).  
 The code contained in the [org/openpdfsign/dss subfolder](https://github.com/open-pdf-sign/open-pdf-sign/tree/master/src/main/java/org/openpdfsign/dss)
-extends and modifies code from the [dss project](https://github.com/esig/dss/) which is licensed under the [LGPL-2.1 license](https://github.com/esig/dss/blob/master/LICENSE).
+extends and modifies code from the [dss project](https://github.com/esig/dss/) which is licensed under the [LGPL-2.1 license](https://github.com/esig/dss/blob/master/LICENSE).  
+
+This project received financial support from [netidee](https://www.netidee.at/open-pdf-sign).

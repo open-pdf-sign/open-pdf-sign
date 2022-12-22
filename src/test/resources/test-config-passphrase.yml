@@ -1,0 +1,4 @@
+certificate: cert.crt
+key: key.pem
+passphrase: KEY_PASSPHRASE
+left: 11

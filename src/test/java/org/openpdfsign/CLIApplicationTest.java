@@ -59,4 +59,23 @@ class CLIApplicationTest {
 
     }
 
+    @Test
+    void testParseArgumentsFromYamlAndCLI() throws URISyntaxException {
+        String[] args = new String[]{
+                "--config",
+                (new File(getClass().getClassLoader().getResource("test-config-passphrase.yml").toURI()).getAbsolutePath()),
+                "--input", "demo.pdf",
+                "--output", "out.pdf",
+                "--width","15"
+        };
+        CommandLineArguments cla = CLIApplication.parseArguments(args);
+        assertEquals("KEY_PASSPHRASE", cla.getKeyPassphrase());
+        assertEquals("cert.crt", cla.getCertificateFile());
+        assertEquals("key.pem", cla.getKeyFile());
+        assertEquals("demo.pdf", cla.getInputFile());
+        assertEquals("out.pdf", cla.getOutputFile());
+        assertEquals(11,cla.getLeft());
+        assertEquals(15, cla.getWidth());
+    }
+
 }

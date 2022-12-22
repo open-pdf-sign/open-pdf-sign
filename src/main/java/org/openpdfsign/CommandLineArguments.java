@@ -10,11 +10,12 @@ import lombok.ToString;
 import java.util.ArrayList;
 
 @Getter
+@Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CommandLineArguments extends SignatureParameters {
 
-    @Parameter(required = false, names = { "--help", "-h" }, description = "prints this page")
+    @Parameter(required = false, names = { "-h", "--help" }, description = "prints this page", help = true)
     private boolean help = false;
 
     @Parameter(required = false, names = { "-i", "--input" }, description = "input pdf file")
@@ -22,6 +23,7 @@ public class CommandLineArguments extends SignatureParameters {
     private String inputFile;
 
     @Parameter(required = false, names = {"-o", "--output"}, description = "output pdf file")
+    @JsonProperty("output")
     private String outputFile;
 
     @Parameter(required = false, names = {"-k", "--key"}, description = "signature key file or keystore")
@@ -29,15 +31,19 @@ public class CommandLineArguments extends SignatureParameters {
     private String keyFile;
 
     @Parameter(required = false, names={"-p","--passphrase"}, description = "passphrase for the signature key or keystore")
+    @JsonProperty("passphrase")
     private String keyPassphrase;
 
     @Parameter(required = false, names={"-c", "--certificate"}, description = "certificate (chain) to be used")
+    @JsonProperty("certificate")
     private String certificateFile;
 
     @Parameter(required = false, names={"-l", "--locale"}, description = "Locale, e.g. de-AT")
+    @JsonProperty("locale")
     private String locale;
 
     @Parameter(required = false, names={"-b", "--binary"}, description = "binary output of PDF")
+    @JsonProperty("binary")
     private boolean binaryOutput = false;
 
     @Parameter(required = false, names={"--port"}, description = "run as server with the given port")
