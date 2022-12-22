@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -156,7 +157,38 @@ public class CLIApplication {
                         }
                     }
 
+                    //combine, command line overrides yaml
+                    try {
+                        CommandLineArguments defaults = new CommandLineArguments();
+
+                        PropertyUtils.describe(cla).entrySet().stream()
+                                .filter(e -> {
+                                    //only override if not null and not default
+                                    try {
+                                        if (e.getValue() == null ||
+                                                e.getValue() == PropertyUtils.getProperty(defaults, e.getKey()) ||
+                                                e.getValue().equals(PropertyUtils.getProperty(defaults, e.getKey()))) {
+                                            return false;
+                                        }
+                                        return true;
+
+                                    } catch (Exception ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                })
+                                .filter(e -> !e.getKey().equals("class"))
+                                .forEach(e -> {
+                                    try {
+                                        PropertyUtils.setProperty(yamlCommandlineArgs, e.getKey(), e.getValue());
+                                    } catch (Exception ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                });
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                     cla = yamlCommandlineArgs;
+
                 } catch(MismatchedInputException e) {
                     System.out.println("Error parsing configuration file");
                     System.out.println(e.getMessage());
