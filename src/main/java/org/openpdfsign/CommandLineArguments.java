@@ -14,7 +14,7 @@ import java.util.ArrayList;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CommandLineArguments extends SignatureParameters {
 
-    @Parameter(required = false, names = { "--help", "-h" }, description = "prints this page")
+    @Parameter(required = false, names = { "-h", "--help" }, description = "prints this page", help = true)
     private boolean help = false;
 
     @Parameter(required = false, names = { "-i", "--input" }, description = "input pdf file")
