@@ -25,7 +25,7 @@ jobs:
         cache: maven
     - name: Get git, build with Maven
       run: >
-        apt-get install git;
+        sudo apt-get install git;
         git describe;
         mvn -B package --file pom.xml
     - name: Build jar
