@@ -18,6 +18,9 @@ public class CommandLineArguments extends SignatureParameters {
     @Parameter(required = false, names = { "-h", "--help" }, description = "prints this page", help = true)
     private boolean help = false;
 
+    @Parameter(required = false, names = {"--version"}, description = "prints version of this program")
+    private boolean version = false;
+
     @Parameter(required = false, names = { "-i", "--input" }, description = "input pdf file")
     @JsonProperty(value = "input", required = true)
     private String inputFile;

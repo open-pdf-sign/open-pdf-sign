@@ -143,6 +143,12 @@ public class CLIApplication {
                 System.exit(0);
             }
 
+            //show version
+            if (cla.isVersion()) {
+                System.out.println("v" + CLIApplication.class.getPackage().getImplementationVersion());
+                System.exit(0);
+            }
+
             // if config is passed, may use this
             if (!Strings.isStringEmpty(cla.getConfigFile())) {
                 //try to load and parse config

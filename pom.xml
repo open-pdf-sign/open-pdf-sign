@@ -48,6 +48,7 @@
                     <archive>
                         <manifest>
                             <mainClass>org.openpdfsign.CLIApplication</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
                 </configuration>
@@ -60,6 +61,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>me.ccampo</groupId>
+                <artifactId>git-version-maven-plugin</artifactId>
+                <version>0.1.0</version> <!-- Use the latest stable version if possible -->
+                <extensions>true</extensions>
+                <configuration>
+                    <strategy hint="git">
+                        <dirtyQualifier>dirty</dirtyQualifier>
+                    </strategy>
+                    <generateTemporaryFile>true</generateTemporaryFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>
