@@ -47,6 +47,8 @@ Options:
     certificate (chain) to be used
   --config
     use a configuration file
+  -h, --help
+    prints this page
   --hint
     text to be displayed in signature field
   --host
