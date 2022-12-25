@@ -121,13 +121,13 @@ will place a visible signature looking similar to the image below on the last pa
 ### Usage in server mode
 
 You can also run open-pdf-sign as a server application in order to only load certificates once and easily integrate it in applications where CLI invocations are not possible. 
-Simply add the `port` or `hostname` parameters, e.g.
+Simply add the `port` or `host` parameters, e.g.
 
 ```shell
 java -jar open-pdf-sign.jar --input input.pdf --output output.pdf \
   --certificate /etc/letsencrypt/live/openpdfsign.org/fullchain.pem \
   --key /etc/letsencrypt/live/openpdfsign.org/privkey.pem
-  --port 8090 --hostname 127.0.0.1
+  --port 8090 --host 127.0.0.1
 ```
 
 Then, PDFs can be signed via the [specified](src/main/resources/openapi.yml) POST request:
