@@ -35,6 +35,9 @@ public class SignatureParameters {
     @JsonProperty("hint")
     private String hint;
 
+    @Parameter(required = false, names={"--no-hint"}, description = "don't display a hint row")
+    private Boolean noHint = false;
+
     @Parameter(required = false, names={"--timestamp"}, description = "include signed timestamp")
     @JsonProperty("timestamp")
     private Boolean useTimestamp = false;

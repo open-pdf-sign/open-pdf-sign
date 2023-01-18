@@ -70,6 +70,8 @@ Options:
     Default: 1.0
   -l, --locale
     Locale, e.g. de-AT
+  --no-hint
+    don't display a hint row
   -o, --output
     output pdf file
   --page

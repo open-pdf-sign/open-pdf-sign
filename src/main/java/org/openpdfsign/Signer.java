@@ -123,7 +123,11 @@ public class Signer {
             if (!Strings.isStringEmpty(params.getHint())) {
                 fieldParameters.setHint(params.getHint());
             } else {
-                fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+                if (params.getNoHint()) {
+                    fieldParameters.setHint(null);
+                } else {
+                    fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+                }
             }
 
             signatureParameters.setImageParameters(imageParameters);
