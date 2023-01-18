@@ -18,6 +18,7 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
 
 import java.io.IOException;
@@ -66,6 +67,8 @@ public class Signer {
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
         if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+            //extra signature space for the use of a timestamped signature
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
         } else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         }
