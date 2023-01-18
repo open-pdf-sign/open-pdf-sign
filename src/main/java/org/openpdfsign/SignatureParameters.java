@@ -39,6 +39,15 @@ public class SignatureParameters {
     @JsonProperty("timestamp")
     private Boolean useTimestamp = false;
 
+    @Parameter(required = false, names={"--label-hint"}, description = "label for the 'hint' row")
+    private String labelHint;
+
+    @Parameter(required = false, names={"--label-timestamp"}, description = "label for the 'timestamp' row")
+    private String labelTimestamp;
+
+    @Parameter(required = false, names={"--label-signee"}, description = "label for the 'signee' row")
+    private String labelSignee;
+
     @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")
     @JsonProperty("tsa")
     private List<String> TSA = new LinkedList<>();

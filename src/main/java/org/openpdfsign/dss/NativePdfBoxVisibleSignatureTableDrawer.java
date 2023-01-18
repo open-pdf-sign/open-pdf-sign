@@ -22,7 +22,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.Matrix;
-import org.openpdfsign.Configuration;
 import org.openpdfsign.TableSignatureFieldParameters;
 import org.vandeseer.easytable.TableDrawer;
 import org.vandeseer.easytable.settings.HorizontalAlignment;
@@ -90,17 +89,17 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                     .verticalAlignment(VerticalAlignment.TOP)
                     .addRow(Row.builder()
                             .add(ImageCell.builder().image(imageXObject).maxHeight(75).verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).rowSpan(3).build())
-                            .add(TextCell.builder().text(Configuration.getInstance().getResourceBundle().getString("signee")).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                            .add(TextCell.builder().text(tableParameters.getLabelSignee()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text(Configuration.getInstance().getResourceBundle().getString("timestamp")).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                            .add(TextCell.builder().text(tableParameters.getLabelTimestamp()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
                             .build())
                     .addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text(Configuration.getInstance().getResourceBundle().getString("hint")).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                            .add(TextCell.builder().text(tableParameters.getLabelHint()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getHint()).build())
                             .build())
                     .build();
