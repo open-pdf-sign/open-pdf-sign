@@ -2,6 +2,7 @@ package org.openpdfsign;
 
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
@@ -12,6 +13,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 @Getter
+@Slf4j
 public class Configuration {
     private static Configuration INSTANCE;
 
@@ -28,12 +30,11 @@ public class Configuration {
             //load resourceBundle, if any
             if (locale == null) {
                 resourceBundle = ResourceBundle.getBundle("strings", Locale.US);
-            }
-            else {
+            } else {
                 try {
-                    resourceBundle = ResourceBundle.getBundle("strings", locale);
+                    resourceBundle = ResourceBundle.getBundle("strings", locale, new ResourceBundleWithoutLocale());
                 } catch (MissingResourceException e) {
-                    e.printStackTrace();
+                    log.info("No resource bundle for " + locale.toString() + ", defaulting to en_US");
                     resourceBundle = ResourceBundle.getBundle("strings", Locale.US);
                 }
 
@@ -59,5 +60,23 @@ public class Configuration {
         return INSTANCE;
     }
 
+    /**
+     * Allow resetting singleton, for unit testing.
+     * Usually we would use dependency injection for this. But here, we don't have any framework.
+     */
+    public static void resetTestingInstance() {
+        INSTANCE = null;
+    }
+
+    public static class ResourceBundleWithoutLocale extends ResourceBundle.Control {
+
+        @Override
+        public Locale getFallbackLocale(String aBaseName, Locale aLocale) {
+            if (aBaseName == null || aLocale == null) {
+                throw new NullPointerException();
+            }
+            return null;
+        }
+    }
 
 }
