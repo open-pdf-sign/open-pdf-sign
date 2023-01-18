@@ -1,34 +1,20 @@
 package org.openpdfsign;
 
 import eu.europa.esig.dss.pades.SignatureFieldParameters;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 public class TableSignatureFieldParameters extends SignatureFieldParameters  {
     private String signatureDate;
     private String signaturString;
     private String hint;
 
-    public String getSignatureDate() {
-        return signatureDate;
-    }
+    private String labelHint;
 
-    public void setSignatureDate(String signatureDate) {
-        this.signatureDate = signatureDate;
-    }
+    private String labelSignee;
 
-    public String getSignaturString() {
-        return signaturString;
-    }
-
-    public void setSignaturString(String signaturString) {
-        this.signaturString = signaturString;
-    }
-
-    public String getHint() {
-        return hint;
-    }
-
-    public void setHint(String hint) {
-        this.hint = hint;
-    }
+    private String labelTimestamp;
 
 }

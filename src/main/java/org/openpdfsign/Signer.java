@@ -17,6 +17,7 @@ import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
@@ -116,10 +117,17 @@ public class Signer {
             }
             fieldParameters.setSignatureDate(formatter.format(signatureParameters.getSigningDate().toInstant()));
             fieldParameters.setSignaturString(signingToken.getKey(keyAlias).getCertificate().getSubject().getPrettyPrintRFC2253());
+            fieldParameters.setLabelHint(ObjectUtils.firstNonNull(params.getLabelHint(), Configuration.getInstance().getResourceBundle().getString("hint")));
+            fieldParameters.setLabelSignee(ObjectUtils.firstNonNull(params.getLabelSignee(), Configuration.getInstance().getResourceBundle().getString("signee")));
+            fieldParameters.setLabelTimestamp(ObjectUtils.firstNonNull(params.getLabelTimestamp(), Configuration.getInstance().getResourceBundle().getString("timestamp")));
             if (!Strings.isStringEmpty(params.getHint())) {
                 fieldParameters.setHint(params.getHint());
             } else {
-                fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+                if (params.getNoHint()) {
+                    fieldParameters.setHint(null);
+                } else {
+                    fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
+                }
             }
 
             signatureParameters.setImageParameters(imageParameters);

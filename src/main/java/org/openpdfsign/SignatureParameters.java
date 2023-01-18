@@ -35,9 +35,21 @@ public class SignatureParameters {
     @JsonProperty("hint")
     private String hint;
 
+    @Parameter(required = false, names={"--no-hint"}, description = "don't display a hint row")
+    private Boolean noHint = false;
+
     @Parameter(required = false, names={"--timestamp"}, description = "include signed timestamp")
     @JsonProperty("timestamp")
     private Boolean useTimestamp = false;
+
+    @Parameter(required = false, names={"--label-hint"}, description = "label for the 'hint' row")
+    private String labelHint;
+
+    @Parameter(required = false, names={"--label-timestamp"}, description = "label for the 'timestamp' row")
+    private String labelTimestamp;
+
+    @Parameter(required = false, names={"--label-signee"}, description = "label for the 'signee' row")
+    private String labelSignee;
 
     @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")
     @JsonProperty("tsa")
