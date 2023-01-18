@@ -59,6 +59,12 @@ Options:
     input pdf file
   -k, --key
     signature key file or keystore
+  --label-hint
+    label for the 'hint' row
+  --label-signee
+    label for the 'signee' row
+  --label-timestamp
+    label for the 'timestamp' row
   --left
     X coordinate of the signature block in cm
     Default: 1.0
@@ -72,7 +78,6 @@ Options:
     passphrase for the signature key or keystore
   --port
     run as server with the given port
-    Default: 8090
   --timestamp
     include signed timestamp
     Default: false
@@ -82,9 +87,11 @@ Options:
     Y coordinate of the signature block in cm
     Default: 1.0
   --tsa
-    use specific time stamping authority as source (if multiple given, will 
+    use specific time stamping authority as source (if multiple given, will
     be used in given order as fallback)
     Default: []
+  --version
+    prints version of this program
   --width
     width of the signature block in cm
     Default: 10.0
