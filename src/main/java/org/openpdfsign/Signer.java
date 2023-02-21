@@ -9,6 +9,10 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
+import org.apache.pdfbox.pdmodel.PDDocument; 
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -34,6 +38,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.io.File;
+  
 
 @Slf4j
 public class Signer {
@@ -41,13 +47,62 @@ public class Signer {
     //see PDRectangle
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
-
+		
+		public void signPdfOnlyWithImage(Path pdfFile, Path outputFile, OutputStream binaryOutput, Integer pageNumber, String imagePath, float left, float top, float width) throws IOException {	
+			//Load PDF document
+			PDDocument doc = PDDocument.load(pdfFile.toFile());
+			
+			//Determine page number when relative from the last page			
+			if (pageNumber < 0) {									
+				int pageCount = doc.getNumberOfPages();
+				pageNumber += pageCount;
+			} else if (pageNumber > 0) {
+				pageNumber--; //zero-based
+			}
+			
+			//Get page to sign
+			PDPage page = doc.getPage(pageNumber);
+			
+			//Load signature image 
+			PDImageXObject pdImage = PDImageXObject.createFromFile(imagePath, doc);
+			
+			//Prepare the stream to insert the image
+			PDPageContentStream contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, false);
+			
+			//Compute left, top and width. Height is scaled according to image's aspect ratio.
+			left  *= POINTS_PER_MM * 10f;
+			top   *= POINTS_PER_MM * 10f;
+			width *= POINTS_PER_MM * 10f;
+			float height = width * ((float) pdImage.getHeight() / (float) pdImage.getWidth());
+			
+			//Draw the image		
+			contentStream.drawImage(pdImage, left, top, width, height);
+			
+			//Close the stream
+			contentStream.close();
+			
+			//Generate output
+			if (binaryOutput != null) {
+				doc.save(binaryOutput);
+			} else {
+				doc.save(outputFile.toAbsolutePath().toString());
+			}
+			
+			//Close the document
+			doc.close();
+		}
+		
     public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
         //load PDF file
         //PDDocument doc = PDDocument.load(pdfFile.toFile());
+				
+				if (visibleSignature && params.getJustImage() && !Strings.isStringEmpty(params.getImageFile())) {
+					signPdfOnlyWithImage(pdfFile, outputFile, binaryOutput, params.getPage(), params.getImageFile(), params.getLeft(), params.getTop(), params.getWidth());
+					return;
+				}
 
         //load PDF file in DSSDocument format
         DSSDocument toSignDocument = new FileDocument(pdfFile.toFile());

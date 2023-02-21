@@ -55,6 +55,8 @@ Options:
     run as server with the given hostname
   --image
     Image to be placed in signature block
+  --just-image
+	  Just insert the signature image to the PDF file (the PDF will not be digitally signed). Use --left, --top and --width to place the image.
   -i, --input
     input pdf file
   -k, --key

@@ -49,4 +49,25 @@ class SignerTest {
         signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, null, params);
         System.out.println(2 + demoPdf.toString());
     }
+		
+		@Test
+    void testSignPdfJustImage() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException, KeyStoreLoader.KeyIsNeededException {
+        Configuration.getInstance(new Locale("en","AT"));
+        
+        URL demoPdf = getClass().getClassLoader().getResource("demo.pdf");
+
+        SignatureParameters params = new SignatureParameters();
+        params.setPage(-1);
+        params.setLeft(3);
+        params.setTop(24);
+        params.setWidth(15);
+        params.setJustImage(true);
+        Path image = Paths.get(getClass().getClassLoader().getResource("signature.png").toURI());
+        params.setImageFile(image.toAbsolutePath().toString());
+
+
+        Signer signer = new Signer();
+        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed4.pdf"), null, null, null, params);
+        System.out.println(2 + demoPdf.toString());
+    }
 }

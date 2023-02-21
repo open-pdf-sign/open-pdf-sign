@@ -14,6 +14,9 @@ public class SignatureParameters {
     @Parameter(required = false, names={"--image"}, description = "Image to be placed in signature block")
     @JsonProperty("image")
     private String imageFile;
+		
+		@Parameter(required = false, names={"--just-image"}, description = "Sign by only inserting the specified image")    
+    private Boolean justImage = false;
 
     @Parameter(required = false, names={"--page"}, description = "Page where the signature block should be placed. [-1] for last page")
     @JsonProperty(value = "page")
