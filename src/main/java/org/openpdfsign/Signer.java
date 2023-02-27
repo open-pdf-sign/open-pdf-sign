@@ -9,7 +9,12 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
+import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
+import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
+import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
@@ -33,7 +38,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 @Slf4j
 public class Signer {
@@ -77,6 +81,30 @@ public class Signer {
 
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+
+        if (signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LT ||
+        signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LTA) {
+            // Capability to download resources from AIA
+            commonCertificateVerifier.setAIASource(new DefaultAIASource());
+
+            // Capability to request OCSP Responders
+            commonCertificateVerifier.setOcspSource(new OnlineOCSPSource());
+
+            // Capability to download CRL
+            commonCertificateVerifier.setCrlSource(new OnlineCRLSource());
+
+            // Create an instance of a trusted certificate source
+            CommonTrustedCertificateSource trustedCertSource = new CommonTrustedCertificateSource();
+
+            // Import defaults
+            CommonCertificateSource commonCertificateSource = TrustedCertificatesLoader.getDefaults();
+
+            // import the keystore as trusted
+            trustedCertSource.importAsTrusted(commonCertificateSource);
+
+            commonCertificateVerifier.addTrustedCertSources(trustedCertSource);
+        }
+
         // Create PAdESService for signature
         PAdESService service = new PAdESService(commonCertificateVerifier);
 
