@@ -93,11 +93,15 @@ public class Signer {
             // Capability to download CRL
             commonCertificateVerifier.setCrlSource(new OnlineCRLSource());
 
+            // Still fetch revocation data for signing, even if a certificate chain is not trusted
+            commonCertificateVerifier.setCheckRevocationForUntrustedChains(true);
+
             // Create an instance of a trusted certificate source
             CommonTrustedCertificateSource trustedCertSource = new CommonTrustedCertificateSource();
 
             // Import defaults
-            CommonCertificateSource commonCertificateSource = TrustedCertificatesLoader.getDefaults();
+            //CommonCertificateSource commonCertificateSource = TrustedCertificatesLoader.getDefaults();
+            CommonCertificateSource commonCertificateSource = new CommonCertificateSource();
 
             // import the keystore as trusted
             trustedCertSource.importAsTrusted(commonCertificateSource);
