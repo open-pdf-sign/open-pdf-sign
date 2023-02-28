@@ -74,7 +74,14 @@ public class Signer {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
             //extra signature space for the use of a timestamped signature
             signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
-        } else {
+        } else if (params.getUseLT()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LT);
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
+        } else if (params.getUseLTA()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.75));
+        }
+        else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         }
         signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
