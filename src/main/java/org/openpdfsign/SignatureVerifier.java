@@ -6,12 +6,10 @@ import eu.europa.esig.dss.detailedreport.DetailedReport;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
-import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.simplereport.SimpleReport;
-import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -19,21 +17,16 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.validationreport.jaxb.ValidationReportType;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.openssl.PEMParser;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+import java.util.List;
 
 @Slf4j
 public class SignatureVerifier {
 
-    public void verifyPdfSignature(Path pdfFile, Path certificate) throws IOException, CertificateException {
+    public void verifyPdfSignature(Path pdfFile, List<Path> certificates) throws IOException, CertificateException {
         //https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html#_validating_an_ades_signature
 
         //load PDF file in DSSDocument format
@@ -56,35 +49,8 @@ public class SignatureVerifier {
         // Create an instance of a trusted certificate source
         CommonTrustedCertificateSource trustedCertSource = new CommonTrustedCertificateSource();
 
-        //get the trusted certificate store
-        X509Certificate cert = null;
-        try {
-            PEMParser pemParser = new PEMParser(Files.newBufferedReader(certificate));
-            while (true) {
-                X509CertificateHolder certHolder = (X509CertificateHolder) pemParser.readObject();
-                if (certHolder == null) {
-                    break;
-                }
-                cert = new JcaX509CertificateConverter().getCertificate(certHolder);
-
-            }
-        } catch (IOException | CertificateException e) {
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            cert = (X509Certificate) factory.generateCertificate(Files.newInputStream(certificate));
-
-        }
-
-        CertificateToken certificateToken = new CertificateToken(cert);
-
-        //CertificateToken certificate = signingToken.getKey("1").getCertificate();
-        CommonCertificateSource commonCertificateSource = new CommonCertificateSource();
-        commonCertificateSource.addCertificate(certificateToken);
-
-
         // import the keystore as trusted
-        trustedCertSource.importAsTrusted(commonCertificateSource);
-
-        commonCertificateVerifier.addTrustedCertSources(trustedCertSource);
+        trustedCertSource.importAsTrusted(TrustedCertificatesLoader.getDefaults());
 
         // Add trust anchors (trusted list, keystore,...) to a list of trusted certificate sources
         // Hint : use method {@code CertificateVerifier.setTrustedCertSources(certSources)} in order to overwrite the existing list
