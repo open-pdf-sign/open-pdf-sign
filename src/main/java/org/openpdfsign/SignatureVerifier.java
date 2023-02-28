@@ -26,7 +26,7 @@ import java.util.List;
 @Slf4j
 public class SignatureVerifier {
 
-    public void verifyPdfSignature(Path pdfFile, List<Path> certificates) throws IOException, CertificateException {
+    public void verifyPdfSignature(Path pdfFile) throws IOException, CertificateException {
         //https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html#_validating_an_ades_signature
 
         //load PDF file in DSSDocument format
