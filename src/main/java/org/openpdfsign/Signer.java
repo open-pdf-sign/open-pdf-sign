@@ -70,18 +70,17 @@ public class Signer {
         ;
         signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
-        if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
-            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+        if (params.getUseLT()) {
             //extra signature space for the use of a timestamped signature
-            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
-        } else if (params.getUseLT()) {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LT);
             signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
         } else if (params.getUseLTA()) {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
             signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.75));
-        }
-        else {
+        } else if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
+        } else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         }
         signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
