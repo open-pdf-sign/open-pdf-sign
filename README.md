@@ -11,7 +11,8 @@ Signatures can be invisible (default) or visible (can be customized).
 * Supported signature profiles: 
   * BASELINE-B
   * BASELINE-T
-  * To be evaluated: BASELINE-LT, BASELINE-LTA
+  * BASELINE-LT
+  * BASELINE-LTA
 
 ## Get Started
 
@@ -40,6 +41,10 @@ Usage:
 
 ```text
 Options:
+  --baseline-lt
+    use PAdES profile with long-term validation material
+  --baseline-lta
+    use PAdES profile with long term availability and integrity of validation material
   -b, --binary
     binary output of PDF
     Default: false
@@ -108,6 +113,22 @@ java -jar open-pdf-sign.jar --input input.pdf --output output.pdf \
   --certificate /etc/letsencrypt/live/openpdfsign.org/fullchain.pem \
   --key /etc/letsencrypt/live/openpdfsign.org/privkey.pem
 ```
+
+### Signing documents with long-term validation info (PAdES-LT)
+
+Sign documents with signatures that provides the long-term availability 
+of the validation material by incorporating all the material 
+or references to material required for validating the signature.  
+For this, using a timestamp is needed.
+
+```shell
+java -jar open-pdf-sign.jar --input input.pdf --output output.pdf \
+  --certificate /etc/letsencrypt/live/openpdfsign.org/fullchain.pem \
+  --key /etc/letsencrypt/live/openpdfsign.org/privkey.pem \
+  --timestamp --tsa http://timestamp.digicert.com
+  --baseline-lt
+```
+
 
 ### Visible signatures
 
