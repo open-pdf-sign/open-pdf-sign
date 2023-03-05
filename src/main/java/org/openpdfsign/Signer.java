@@ -9,7 +9,12 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
+import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
+import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
+import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
@@ -33,7 +38,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 @Slf4j
 public class Signer {
@@ -66,9 +70,15 @@ public class Signer {
         ;
         signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
-        if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
-            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+        if (params.getUseLT()) {
             //extra signature space for the use of a timestamped signature
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LT);
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
+        } else if (params.getUseLTA()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
+            signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.75));
+        } else if (params.getUseTimestamp() || !params.getTSA().isEmpty()) {
+            signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
             signatureParameters.setContentSize((int) (SignatureOptions.DEFAULT_SIGNATURE_SIZE * 1.5));
         } else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
@@ -77,6 +87,34 @@ public class Signer {
 
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+
+        if (signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LT ||
+        signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LTA) {
+            // Capability to download resources from AIA
+            commonCertificateVerifier.setAIASource(new DefaultAIASource());
+
+            // Capability to request OCSP Responders
+            commonCertificateVerifier.setOcspSource(new OnlineOCSPSource());
+
+            // Capability to download CRL
+            commonCertificateVerifier.setCrlSource(new OnlineCRLSource());
+
+            // Still fetch revocation data for signing, even if a certificate chain is not trusted
+            commonCertificateVerifier.setCheckRevocationForUntrustedChains(true);
+
+            // Create an instance of a trusted certificate source
+            CommonTrustedCertificateSource trustedCertSource = new CommonTrustedCertificateSource();
+
+            // Import defaults
+            //CommonCertificateSource commonCertificateSource = TrustedCertificatesLoader.getDefaults();
+            CommonCertificateSource commonCertificateSource = new CommonCertificateSource();
+
+            // import the keystore as trusted
+            trustedCertSource.importAsTrusted(commonCertificateSource);
+
+            commonCertificateVerifier.addTrustedCertSources(trustedCertSource);
+        }
+
         // Create PAdESService for signature
         PAdESService service = new PAdESService(commonCertificateVerifier);
 
@@ -142,7 +180,7 @@ public class Signer {
         //only use TSP source, if parameter is set
         //if it is set to an url, us this
         //otherwise, default
-        if (params.getUseTimestamp() || params.getTSA() != null) {
+        if (params.getUseTimestamp() || params.getUseLT() || params.getUseLTA() || params.getTSA() != null) {
             CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
             Map<String, TSPSource> tspSources = new HashMap<>();
             compositeTSPSource.setTspSources(tspSources);

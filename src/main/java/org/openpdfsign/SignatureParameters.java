@@ -42,6 +42,12 @@ public class SignatureParameters {
     @JsonProperty("timestamp")
     private Boolean useTimestamp = false;
 
+    @Parameter(required = false, names={"--baseline-lt"}, description = "use PAdES profile with long-term validation material")
+    private Boolean useLT = false;
+
+    @Parameter(required = false, names={"--baseline-lta"}, description = "use PAdES profile with long term availability and integrity of validation material")
+    private Boolean useLTA = false;
+
     @Parameter(required = false, names={"--label-hint"}, description = "label for the 'hint' row")
     private String labelHint;
 
