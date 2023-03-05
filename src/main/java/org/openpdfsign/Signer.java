@@ -180,7 +180,7 @@ public class Signer {
         //only use TSP source, if parameter is set
         //if it is set to an url, us this
         //otherwise, default
-        if (params.getUseTimestamp() || params.getTSA() != null) {
+        if (params.getUseTimestamp() || params.getUseLT() || params.getUseLTA() || params.getTSA() != null) {
             CompositeTSPSource compositeTSPSource = new CompositeTSPSource();
             Map<String, TSPSource> tspSources = new HashMap<>();
             compositeTSPSource.setTspSources(tspSources);
