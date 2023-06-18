@@ -26,6 +26,7 @@
         <org.eclipse.jetty-version>9.4.49.v20220914</org.eclipse.jetty-version>
         <jackson.version>2.15.2</jackson.version>
         <dss.version>5.12.1</dss.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <build>
