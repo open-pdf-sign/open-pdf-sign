@@ -27,7 +27,7 @@ jobs:
       run: >
         mvn -B package --file pom.xml
     - name: Build jar
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: open-pdf-sign
         path: target/openpdfsign-*-jar-with-dependencies.jar
