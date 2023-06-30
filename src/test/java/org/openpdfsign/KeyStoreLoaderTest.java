@@ -57,4 +57,17 @@ class KeyStoreLoaderTest {
         assertNotNull(pkcs12.getKey("alias", keyStorePassword));
         assertNotNull(keyStore);
     }
+
+    @Test
+    void testLoadECCKeys() throws URISyntaxException, CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, KeyStoreLoader.KeyIsNeededException, OperatorCreationException, PKCSException, UnrecoverableKeyException {
+        URL pubKey = getClass().getClassLoader().getResource("cert-ecc.pem");
+        URL privKey = getClass().getClassLoader().getResource("key-ecc.pem");
+
+        byte[] keyStore = KeyStoreLoader.loadKeyStoreFromKeys(Paths.get(pubKey.toURI()), Paths.get(privKey.toURI()), privateKeyPassword, keyStorePassword);
+        KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
+        pkcs12.load(new ByteArrayInputStream(keyStore),keyStorePassword);
+        assertNotNull(pkcs12.getCertificate("alias"));
+        assertNotNull(pkcs12.getKey("alias", keyStorePassword));
+        assertNotNull(keyStore);
+    }
 }
