@@ -50,6 +50,11 @@ Options:
     Default: false
   -c, --certificate
     certificate (chain) to be used
+  --certification
+      Quality of signature certification (DocMDP) and allowed changes after
+      signing
+      Default: certified-minimal-changes-permitted
+      Possible Values: [not-certified, certified-no-change-permitted, certified-minimal-changes-permitted, certified-changes-permitted]
   --config
     use a configuration file
   -h, --help

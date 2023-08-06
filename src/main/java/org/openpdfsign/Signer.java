@@ -83,7 +83,23 @@ public class Signer {
         } else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         }
-        signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
+
+        //set certification level
+        switch (params.getCertification()) {
+            case NOT_CERTIFIED:
+                //don't set anything
+                break;
+            case CERTIFIED_NO_CHANGE_PERMITTED:
+                signatureParameters.setPermission(CertificationPermission.NO_CHANGE_PERMITTED);
+                break;
+            case CERTIFIED_CHANGES_PERMITTED:
+                signatureParameters.setPermission(CertificationPermission.CHANGES_PERMITTED);
+                break;
+            case CERTIFIED_MINIMAL_CHANGES_PERMITTED:
+            default:
+                signatureParameters.setPermission(CertificationPermission.MINIMAL_CHANGES_PERMITTED);
+                break;
+        }
 
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
