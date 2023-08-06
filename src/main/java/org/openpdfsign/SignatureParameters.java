@@ -1,6 +1,8 @@
 package org.openpdfsign;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.EnumConverter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,4 +66,58 @@ public class SignatureParameters {
     @Parameter(required = false, names = {"--timezone"}, description = "use specific timezone for time info, e.g. Europe/Vienna")
     @JsonProperty("timezone")
     private String timezone;
+
+    @Parameter(required = false, names={"--certification"}, converter = CertificationModeConverter.class, description = "Quality of signature certification (DocMDP) and allowed changes after signing")
+    @JsonProperty("certification")
+    private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
+
+    public static enum CertificationMode {
+        NOT_CERTIFIED("not-certified"),
+        CERTIFIED_NO_CHANGE_PERMITTED("certified-no-change-permitted"),
+        CERTIFIED_MINIMAL_CHANGES_PERMITTED("certified-minimal-changes-permitted"),
+        CERTIFIED_CHANGES_PERMITTED("certified-changes-permitted");
+
+        private String certification;
+
+        CertificationMode(String certification) {
+            this.certification = certification;
+        }
+
+        @JsonCreator
+        public static CertificationMode forValue(String value) {
+            for (CertificationMode mode : CertificationMode.values()) {
+                if (mode.toString().equals(value)) {
+                    return mode;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return certification;
+        }
+    }
+
+
+    public static class CertificationModeConverter extends EnumConverter<CertificationMode> {
+
+        public CertificationModeConverter(String optionName) {
+            super(optionName, CertificationMode.class);
+        }
+
+        @Override
+        public CertificationMode convert(String value) {
+            //value needs to be enum
+            CertificationMode mode = CertificationMode.forValue(value);
+            if (mode != null) {
+                return mode;
+            }
+
+            //call super class converter in order to get error message
+            return super.convert(value);
+        }
+    }
+
+
 }

@@ -31,6 +31,7 @@ class CLIApplicationTest {
         };
         CommandLineArguments cla = CLIApplication.parseArguments(args);
         assertEquals(true, cla.isBinaryOutput());
+        assertEquals(SignatureParameters.CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED, cla.getCertification());
     }
 
     @Test
@@ -45,6 +46,20 @@ class CLIApplicationTest {
     }
 
     @Test
+    void testParseEnum() {
+        String[] args = new String[]{
+                "-k", getClass().getClassLoader().getResource("key.pem").toString(),
+                "-c", getClass().getClassLoader().getResource("cert.pem").toString(),
+                "-i", getClass().getClassLoader().getResource("demo.pdf").toString(),
+                "-b",
+                "--certification","not-certified"
+        };
+        CommandLineArguments cla = CLIApplication.parseArguments(args);
+        assertEquals(true, cla.isBinaryOutput());
+        assertEquals(SignatureParameters.CertificationMode.NOT_CERTIFIED, cla.getCertification());
+    }
+
+    @Test
     void testParseArgumentsFromYaml() throws URISyntaxException {
         String[] args = new String[]{
                 "--config", (new File(getClass().getClassLoader().getResource("test-config.yml").toURI()).getAbsolutePath())
@@ -56,6 +71,7 @@ class CLIApplicationTest {
         assertEquals("exampleB.com",cla.getCertificates().get(2).getHost());
         assertEquals("exampleC.com",cla.getCertificates().get(3).getHost());
         assertEquals("example.com",cla.getCertificates().get(4).getHost());
+        assertEquals(SignatureParameters.CertificationMode.CERTIFIED_NO_CHANGE_PERMITTED, cla.getCertification());
 
     }
 
