@@ -71,6 +71,10 @@ public class SignatureParameters {
     @JsonProperty("certification")
     private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
 
+    @Parameter(required = false, names={"--add-page"})
+    @JsonProperty("addPage")
+    private Boolean addPage;
+
     public static enum CertificationMode {
         NOT_CERTIFIED("not-certified"),
         CERTIFIED_NO_CHANGE_PERMITTED("certified-no-change-permitted"),
