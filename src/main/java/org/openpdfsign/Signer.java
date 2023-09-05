@@ -101,6 +101,21 @@ public class Signer {
                 break;
         }
 
+        if(!Strings.isStringEmpty(params.getLocation()))
+        {
+            signatureParameters.setLocation(params.getLocation());
+        }
+
+        if(!Strings.isStringEmpty(params.getReason()))
+        {
+            signatureParameters.setReason(params.getReason());
+        }
+
+        if(!Strings.isStringEmpty(params.getContact()))
+        {
+            signatureParameters.setContactInfo(params.getContact());
+        }
+
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 

@@ -71,6 +71,18 @@ public class SignatureParameters {
     @JsonProperty("certification")
     private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
 
+    @Parameter(required = false, names={"--reason"}, description = "Reason for signing")
+    @JsonProperty("reason")
+    private String reason;
+
+    @Parameter(required = false, names={"--location"}, description = "Location during signing")
+    @JsonProperty("location")
+    private String location;
+
+    @Parameter(required = false, names={"--contact"}, description = "Contact information of the signer")
+    @JsonProperty("contact")
+    private String contact;
+
     public static enum CertificationMode {
         NOT_CERTIFIED("not-certified"),
         CERTIFIED_NO_CHANGE_PERMITTED("certified-no-change-permitted"),
