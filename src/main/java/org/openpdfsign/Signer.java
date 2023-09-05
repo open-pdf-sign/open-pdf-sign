@@ -23,6 +23,8 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
@@ -37,9 +39,7 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class Signer {
@@ -155,8 +155,10 @@ public class Signer {
                 PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
                 PDPage newPage = new PDPage(pdDocument.getPage(pdDocument.getNumberOfPages() - 1).getMediaBox());
                 pdDocument.addPage(newPage);
+                Set<COSDictionary> cosSet = new HashSet<>();
+                cosSet.add(newPage.getCOSObject().getCOSDictionary(COSName.PARENT));
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                pdDocument.save(bos);
+                pdDocument.saveIncremental(bos, cosSet);
                 pdDocument.close();
                 toSignDocument = new InMemoryDocument(bos.toByteArray());
             }
