@@ -23,7 +23,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <org.apache.pdfbox-version>2.0.29</org.apache.pdfbox-version>
-        <org.eclipse.jetty-version>9.4.49.v20220914</org.eclipse.jetty-version>
+        <org.eclipse.jetty-version>9.4.52.v20230823</org.eclipse.jetty-version>
         <jackson.version>2.15.2</jackson.version>
         <dss.version>5.12.1</dss.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
