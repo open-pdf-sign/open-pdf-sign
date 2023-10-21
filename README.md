@@ -41,6 +41,8 @@ Usage:
 
 ```text
 Options:
+  --add-page
+    add a blank page to the end of the document before signing
   --baseline-lt
     use PAdES profile with long-term validation material
   --baseline-lta
@@ -90,6 +92,12 @@ Options:
     passphrase for the signature key or keystore
   --port
     run as server with the given port
+  --signature-contact
+    Contact information of the signer
+  --signature-location
+    The signer's location
+  --signature-reason
+    The signature creation reason
   --timestamp
     include signed timestamp
     Default: false

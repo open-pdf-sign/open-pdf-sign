@@ -71,17 +71,21 @@ public class SignatureParameters {
     @JsonProperty("certification")
     private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
 
-    @Parameter(required = false, names={"--reason"}, description = "Reason for signing")
+    @Parameter(required = false, names={"--signature-reason"}, description = "The signature creation reason")
     @JsonProperty("reason")
     private String reason;
 
-    @Parameter(required = false, names={"--location"}, description = "Location during signing")
+    @Parameter(required = false, names={"--signature-location"}, description = "The signer's location")
     @JsonProperty("location")
     private String location;
 
-    @Parameter(required = false, names={"--contact"}, description = "Contact information of the signer")
+    @Parameter(required = false, names={"--signature-contact"}, description = "Contact information of the signer")
     @JsonProperty("contact")
     private String contact;
+
+    @Parameter(required = false, names={"--add-page"}, description = "add a blank page to the end of the document before signing")
+    @JsonProperty("addPage")
+    private Boolean addPage;
 
     public static enum CertificationMode {
         NOT_CERTIFIED("not-certified"),
