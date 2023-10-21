@@ -117,6 +117,7 @@ public class Signer {
         {
             signatureParameters.setContactInfo(params.getContact());
         }
+        signatureParameters.setAppName("open-pdf-sign");
 
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
