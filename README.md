@@ -41,6 +41,8 @@ Usage:
 
 ```text
 Options:
+  --add-page
+    add a blank page to the end of the document before signing
   --baseline-lt
     use PAdES profile with long-term validation material
   --baseline-lta

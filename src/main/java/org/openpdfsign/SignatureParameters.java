@@ -71,7 +71,7 @@ public class SignatureParameters {
     @JsonProperty("certification")
     private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
 
-    @Parameter(required = false, names={"--add-page"})
+    @Parameter(required = false, names={"--add-page"}, description = "add a blank page to the end of the document before signing")
     @JsonProperty("addPage")
     private Boolean addPage;
 
