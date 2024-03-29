@@ -73,39 +73,55 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
             java.util.logging.Logger.getLogger("org.apache.pdfbox").setLevel(java.util.logging.Level.OFF);
             java.util.logging.Logger.getLogger("org.apache.fontbox").setLevel(java.util.logging.Level.OFF);
 
-            //calculate dynamic width, if any
-            final float imageColumnWidth = 75;
-            final float labelColumnWidth = 90;
-            float tableWidth = parameters.getFieldParameters().getWidth();
-            tableWidth = Math.max((imageColumnWidth + labelColumnWidth + 50), tableWidth);
+            Table.TableBuilder myTableBuilder = Table.builder();
 
-            // Build the table
-            boolean hasHint = tableParameters.getHint() != null;
-            Table.TableBuilder myTableBuilder = Table.builder()
-                    .addColumnsOfWidth(imageColumnWidth, labelColumnWidth, (tableWidth - imageColumnWidth - labelColumnWidth))
-                    .backgroundColor(Color.WHITE)
-                    .borderWidth(0.75f)
-                    .padding(5)
-                    .fontSize(8)
-                    .verticalAlignment(VerticalAlignment.TOP)
-                    .addRow(Row.builder()
-                            .add(ImageCell.builder().image(imageXObject).maxHeight(75)
-                                    .verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).rowSpan((hasHint ? 3 : 2)).build())
-                            .add(TextCell.builder().text(tableParameters.getLabelSignee()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
-                            .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
-                            .build())
-                    .addRow(Row.builder()
+            if (tableParameters.getImageOnly()) {
+                //image only as single-cell
+                myTableBuilder.addColumnsOfWidth(parameters.getFieldParameters().getWidth())
+                        .backgroundColor(Color.white)
+                        .borderWidth(0)
+                        .padding(2)
+                        .verticalAlignment(VerticalAlignment.TOP)
+                        .addRow(Row.builder()
+                                .add(ImageCell.builder().image(imageXObject).maxHeight(3 * 75)
+                                        .verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).build())
+                                .build());
+            }
+            else {
+                //calculate dynamic width, if any
+                final float imageColumnWidth = 75;
+                final float labelColumnWidth = 90;
+                float tableWidth = parameters.getFieldParameters().getWidth();
+                tableWidth = Math.max((imageColumnWidth + labelColumnWidth + 50), tableWidth);
+
+                // Build the table
+                boolean hasHint = tableParameters.getHint() != null;
+                myTableBuilder
+                        .addColumnsOfWidth(imageColumnWidth, labelColumnWidth, (tableWidth - imageColumnWidth - labelColumnWidth))
+                        .backgroundColor(Color.WHITE)
+                        .borderWidth(0.75f)
+                        .padding(5)
+                        .fontSize(8)
+                        .verticalAlignment(VerticalAlignment.TOP)
+                        .addRow(Row.builder()
+                                .add(ImageCell.builder().image(imageXObject).maxHeight(75)
+                                        .verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).rowSpan((hasHint ? 3 : 2)).build())
+                                .add(TextCell.builder().text(tableParameters.getLabelSignee()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                                .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
+                                .build())
+                        .addRow(Row.builder()
+                                //.height(100f)
+                                .add(TextCell.builder().text(tableParameters.getLabelTimestamp()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                                .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
+                                .build());
+
+                if (hasHint) {
+                    myTableBuilder = myTableBuilder.addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text(tableParameters.getLabelTimestamp()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
-                            .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
+                            .add(TextCell.builder().text(tableParameters.getLabelHint()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                            .add(TextCell.builder().text(tableParameters.getHint()).build())
                             .build());
-
-            if (hasHint) {
-                myTableBuilder = myTableBuilder.addRow(Row.builder()
-                        //.height(100f)
-                        .add(TextCell.builder().text(tableParameters.getLabelHint()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
-                        .add(TextCell.builder().text(tableParameters.getHint()).build())
-                        .build());
+                }
             }
 
             Table myTable = myTableBuilder.build();
