@@ -37,9 +37,6 @@ public class CommandLineArguments extends SignatureParameters {
     @JsonProperty("passphrase")
     private String keyPassphrase;
 
-    @Parameter(required = false, names={"--pdf-password"}, description = "password for the PDF file")
-    private String pdfPassphrase;
-
     @Parameter(required = false, names={"-c", "--certificate"}, description = "certificate (chain) to be used")
     @JsonProperty("certificate")
     private String certificateFile;

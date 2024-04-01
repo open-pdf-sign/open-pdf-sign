@@ -73,7 +73,7 @@ public class SignerServlet extends HttpServlet {
         Signer s = new Signer();
         res.setStatus(HttpServletResponse.SC_OK);
         res.setHeader("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"");
-        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyName), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams(), null);
+        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyName), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams());
         log.debug("signed " + path + " with " + keyName);
         res.getOutputStream().flush();
     }
@@ -140,7 +140,7 @@ public class SignerServlet extends HttpServlet {
         Signer s = new Signer();
         res.setStatus(HttpServletResponse.SC_OK);
         res.setHeader("Content-Disposition", "attachment; filename=\"" + path.getFileName().toString() + "\"");
-        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyPath), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams(), null);
+        s.signPdf(path, null, ServerConfigHolder.getInstance().getKeystores().get(keyPath), ServerConfigHolder.getInstance().getKeystorePassphrase(), res.getOutputStream(), ServerConfigHolder.getInstance().getParams());
         log.debug("signed " + path + " with " + keyPath);
         res.getOutputStream().flush();
     }

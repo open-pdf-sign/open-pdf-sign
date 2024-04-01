@@ -57,6 +57,10 @@ public class SignatureParameters {
     @JsonProperty("baseline-lta")
     private Boolean useLTA = false;
 
+    @Parameter(required = false, names={"--pdf-passphrase"}, description = "Password required for reading a password-protected PDF input file")
+    @JsonProperty("pdf-passphrase")
+    private String pdfPassphrase;
+
     @Parameter(required = false, names={"--label-hint"}, description = "label for the 'hint' row")
     @JsonProperty("label-hint")
     private String labelHint;

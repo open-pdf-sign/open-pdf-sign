@@ -23,6 +23,7 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -48,7 +49,7 @@ public class Signer {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params, char[] pdfPassword) throws IOException {
+    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
@@ -244,8 +245,10 @@ public class Signer {
             service.setTspSource(compositeTSPSource);
         }
 
-        if(pdfPassword != null)
-            signatureParameters.setPasswordProtection(pdfPassword);
+        //for encrypted PDF files, the passphrase is needed
+        if(!StringUtils.isEmpty(params.getPdfPassphrase())) {
+            signatureParameters.setPasswordProtection(params.getPdfPassphrase().toCharArray());
+        }
 
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, signatureParameters);
 
