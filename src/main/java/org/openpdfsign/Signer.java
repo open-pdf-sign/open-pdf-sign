@@ -48,7 +48,7 @@ public class Signer {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params) throws IOException {
+    public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params, char[] pdfPassword) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
         //https://ec.europa.eu/cefdigital/DSS/webapp-demo/doc/dss-documentation.html
@@ -243,6 +243,9 @@ public class Signer {
             }
             service.setTspSource(compositeTSPSource);
         }
+
+        if(pdfPassword != null)
+            signatureParameters.setPasswordProtection(pdfPassword);
 
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, signatureParameters);
 

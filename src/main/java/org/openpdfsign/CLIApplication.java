@@ -123,7 +123,7 @@ public class CLIApplication {
             Path outputFile = cla.getOutputFile() == null ? null : Paths.get(cla.getOutputFile());
 
             Signer s = new Signer();
-            s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput() ? System.out : null, cla);
+            s.signPdf(pdfFile, outputFile, keystore, keystorePassphrase, cla.isBinaryOutput() ? System.out : null, cla, cla.getPdfPassphrase().toCharArray());
         }
     }
 

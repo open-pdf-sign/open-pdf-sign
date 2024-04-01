@@ -46,7 +46,7 @@ class SignerTest {
 
 
         Signer signer = new Signer();
-        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, null, params);
+        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, null, params, null);
         System.out.println(2 + demoPdf.toString());
     }
 }
