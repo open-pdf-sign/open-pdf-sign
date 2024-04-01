@@ -49,4 +49,25 @@ class SignerTest {
         signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3.pdf"),keyStore,keyStorePassword, null, params);
         System.out.println(2 + demoPdf.toString());
     }
+
+    @Test
+    void testSignPdfPassword() throws URISyntaxException, IOException, NoSuchAlgorithmException, CertificateException, OperatorCreationException, PKCSException, KeyStoreException, KeyStoreLoader.KeyIsNeededException {
+        URL pubKey = getClass().getClassLoader().getResource("cert.pem");
+        URL privKey = getClass().getClassLoader().getResource("key_nopass.pem");
+
+        final char[] password = "123456789".toCharArray();
+        final char[] keyStorePassword = "987654321".toCharArray();
+
+        byte[] keyStore = KeyStoreLoader.loadKeyStoreFromKeys(Paths.get(pubKey.toURI()), Paths.get(privKey.toURI()), null, keyStorePassword);
+        //keyStore = Files.readAllBytes(new File(getClass().getClassLoader().getResource("cert.pem").toURI()).toPath());
+
+        URL demoPdf = getClass().getClassLoader().getResource("demo_protected.pdf");
+
+        SignatureParameters params = new SignatureParameters();
+        params.setPdfPassphrase("testtest");
+
+        Signer signer = new Signer();
+        signer.signPdf(Paths.get(demoPdf.toURI()), Paths.get("signed3s.pdf"),keyStore,keyStorePassword, null, params);
+        System.out.println(2 + demoPdf.toString());
+    }
 }

@@ -93,6 +93,8 @@ Options:
     Page where the signature block should be placed. [-1] for last page
   -p, --passphrase
     passphrase for the signature key or keystore
+  --pdf-passphrase
+    Password required for reading a password-protected PDF input file
   --port
     run as server with the given port
   --signature-contact

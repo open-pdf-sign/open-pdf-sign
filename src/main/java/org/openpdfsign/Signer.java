@@ -23,6 +23,7 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -242,6 +243,11 @@ public class Signer {
                 });
             }
             service.setTspSource(compositeTSPSource);
+        }
+
+        //for encrypted PDF files, the passphrase is needed
+        if(!StringUtils.isEmpty(params.getPdfPassphrase())) {
+            signatureParameters.setPasswordProtection(params.getPdfPassphrase().toCharArray());
         }
 
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, signatureParameters);
