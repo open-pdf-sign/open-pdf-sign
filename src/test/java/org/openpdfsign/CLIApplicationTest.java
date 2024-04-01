@@ -76,6 +76,30 @@ class CLIApplicationTest {
     }
 
     @Test
+    void testParseArgumentsFromYamlAddPage() throws URISyntaxException {
+        String[] args = new String[]{
+                "--config", (new File(getClass().getClassLoader().getResource("test-config-addpage.yml").toURI()).getAbsolutePath()),
+                "--input", "demo.pdf",
+                "--output", "out.pdf",
+                "-k", getClass().getClassLoader().getResource("key.pem").toString(),
+                "-c", getClass().getClassLoader().getResource("cert.pem").toString(),
+        };;
+        CommandLineArguments cla = CLIApplication.parseArguments(args);
+        assertTrue(cla.getAddPage());
+        assertEquals(-1, cla.getPage());
+        assertEquals("/etc/openpdfsign/XXXX.png", cla.getImageFile());
+        assertEquals("This document is copyrighted by XXXX", cla.getHint());
+        assertEquals("Copyright", cla.getLabelHint());
+        assertEquals("Reason", cla.getReason());
+        assertEquals("Location", cla.getLocation());
+        assertEquals("XXXXXX", cla.getContact());
+        assertEquals(SignatureParameters.CertificationMode.CERTIFIED_NO_CHANGE_PERMITTED, cla.getCertification());
+        assertTrue(cla.getUseLTA());
+        assertEquals("fr-FR", cla.getLocale());
+        assertEquals(15, cla.getWidth());
+    }
+
+    @Test
     void testParseArgumentsFromYamlAndCLI() throws URISyntaxException {
         String[] args = new String[]{
                 "--config",

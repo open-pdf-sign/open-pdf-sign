@@ -1,0 +1,13 @@
+add-page: true
+page: -1 # if not set, no visible signature
+image: /etc/openpdfsign/XXXX.png
+label-hint: "Copyright"
+hint: "This document is copyrighted by XXXX"
+signature-contact: "XXXXXX"
+signature-reason: "Reason"
+signature-location: "Location"
+label-timestamp: "timestamp"
+certification: certified-no-change-permitted
+baseline-lta: true
+locale: fr-FR
+width: 15

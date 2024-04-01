@@ -214,6 +214,7 @@ public class Signer {
                     fieldParameters.setHint(Configuration.getInstance().getResourceBundle().getString("hint_text"));
                 }
             }
+            fieldParameters.setImageOnly(params.getImageOnly());
 
             signatureParameters.setImageParameters(imageParameters);
 

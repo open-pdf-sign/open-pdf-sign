@@ -67,6 +67,9 @@ Options:
     run as server with the given hostname
   --image
     Image to be placed in signature block
+  --image-only
+    Only use the image as signature content
+    Default: false
   -i, --input
     input pdf file
   -k, --key

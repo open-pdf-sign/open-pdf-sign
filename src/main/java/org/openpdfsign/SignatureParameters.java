@@ -17,6 +17,10 @@ public class SignatureParameters {
     @JsonProperty("image")
     private String imageFile;
 
+    @Parameter(required = false, names={"--image-only"}, description = "Only use the image as signature content")
+    @JsonProperty("image-only")
+    private Boolean imageOnly = false;
+
     @Parameter(required = false, names={"--page"}, description = "Page where the signature block should be placed. [-1] for last page")
     @JsonProperty(value = "page")
     private Integer page;
@@ -38,6 +42,7 @@ public class SignatureParameters {
     private String hint;
 
     @Parameter(required = false, names={"--no-hint"}, description = "don't display a hint row")
+    @JsonProperty("no-hint")
     private Boolean noHint = false;
 
     @Parameter(required = false, names={"--timestamp"}, description = "include signed timestamp")
@@ -45,18 +50,23 @@ public class SignatureParameters {
     private Boolean useTimestamp = false;
 
     @Parameter(required = false, names={"--baseline-lt"}, description = "use PAdES profile with long-term validation material")
+    @JsonProperty("baseline-lt")
     private Boolean useLT = false;
 
     @Parameter(required = false, names={"--baseline-lta"}, description = "use PAdES profile with long term availability and integrity of validation material")
+    @JsonProperty("baseline-lta")
     private Boolean useLTA = false;
 
     @Parameter(required = false, names={"--label-hint"}, description = "label for the 'hint' row")
+    @JsonProperty("label-hint")
     private String labelHint;
 
     @Parameter(required = false, names={"--label-timestamp"}, description = "label for the 'timestamp' row")
+    @JsonProperty("label-timestamp")
     private String labelTimestamp;
 
     @Parameter(required = false, names={"--label-signee"}, description = "label for the 'signee' row")
+    @JsonProperty("label-signee")
     private String labelSignee;
 
     @Parameter(required = false, names={"--tsa"}, description = "use specific time stamping authority as source (if multiple given, will be used in given order as fallback)")
@@ -72,19 +82,19 @@ public class SignatureParameters {
     private CertificationMode certification = CertificationMode.CERTIFIED_MINIMAL_CHANGES_PERMITTED;
 
     @Parameter(required = false, names={"--signature-reason"}, description = "The signature creation reason")
-    @JsonProperty("reason")
+    @JsonProperty("signature-reason")
     private String reason;
 
     @Parameter(required = false, names={"--signature-location"}, description = "The signer's location")
-    @JsonProperty("location")
+    @JsonProperty("signature-location")
     private String location;
 
     @Parameter(required = false, names={"--signature-contact"}, description = "Contact information of the signer")
-    @JsonProperty("contact")
+    @JsonProperty("signature-contact")
     private String contact;
 
     @Parameter(required = false, names={"--add-page"}, description = "add a blank page to the end of the document before signing")
-    @JsonProperty("addPage")
+    @JsonProperty("add-page")
     private Boolean addPage;
 
     public static enum CertificationMode {
