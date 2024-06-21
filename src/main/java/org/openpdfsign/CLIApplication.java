@@ -16,7 +16,6 @@ import org.eclipse.jetty.servlet.ServletHandler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ListIterator;
@@ -51,34 +50,35 @@ public class CLIApplication {
         } else {
             keystorePassphrase = "123456789".toCharArray();
         }
-        if (!Strings.isStringEmpty(cla.getCertificateFile()) &&
-                !Strings.isStringEmpty(cla.getKeyFile())) {
+        boolean correctPassphraseAvailable = false;
+        char[] passphrase = (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray();
+        while (!correctPassphraseAvailable) {
             try {
-                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
-                        Paths.get(cla.getCertificateFile()),
-                        Paths.get(cla.getKeyFile()),
-                        (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
-                        keystorePassphrase
-                );
+                if (!Strings.isStringEmpty(cla.getCertificateFile()) &&
+                        !Strings.isStringEmpty(cla.getKeyFile())) {
+                    //chain and key were provided (e.g. as PEM files)
+                    keystore = KeyStoreLoader.loadKeyStoreFromKeys(
+                            Paths.get(cla.getCertificateFile()),
+                            Paths.get(cla.getKeyFile()),
+                            passphrase,
+                            keystorePassphrase
+                    );
+                    log.debug("Key and Certificate loaded");
+
+                } else if (!Strings.isStringEmpty(cla.getKeyFile())) {
+                    //a keystore (.jks or .pfx) was provided
+                    keystore = KeyStoreLoader.loadFromKeystore(Paths.get(cla.getKeyFile()), passphrase);
+                    keystorePassphrase = passphrase;
+                }
+
+                correctPassphraseAvailable = true;
             } catch (KeyStoreLoader.KeyIsNeededException e) {
                 //load key from stdin if not provided
                 System.out.print("Please provide passphrase for private key file> ");
                 Scanner in = new Scanner(System.in);
                 String userPassphrase = in.nextLine();
-                keystore = KeyStoreLoader.loadKeyStoreFromKeys(
-                        Paths.get(cla.getCertificateFile()),
-                        Paths.get(cla.getKeyFile()),
-                        userPassphrase.toCharArray(),
-                        keystorePassphrase
-                );
+                passphrase = userPassphrase.toCharArray();
             }
-            log.debug("Key and Certificate loaded");
-
-        }
-        else if (!Strings.isStringEmpty(cla.getKeyFile()) &&
-                !Strings.isStringEmpty(cla.getKeyPassphrase())) {
-            //already keystore being loaded
-            keystore = Files.readAllBytes(Paths.get(cla.getKeyFile()));
         }
 
         if (cla.getPort() > 0 || cla.getHostname() != null) {
@@ -87,13 +87,14 @@ public class CLIApplication {
 
             if (cla.getCertificates() != null && !cla.getCertificates().isEmpty()) {
                 //load all the keys
+                char[] staticPassphrase = keystorePassphrase;
                 cla.getCertificates().stream().forEach(cp -> {
                     try {
                         byte[] lKeystore = KeyStoreLoader.loadKeyStoreFromKeys(
                                 Paths.get(cp.getCertificateFile()),
                                 Paths.get(cp.getKeyFile()),
                                 (cla.getKeyPassphrase() == null) ? null : cla.getKeyPassphrase().toCharArray(),
-                                keystorePassphrase
+                                staticPassphrase
                         );
                         ServerConfigHolder.getInstance().getKeystores().put(cp.getHost(), lKeystore);
                     } catch (Exception e) {

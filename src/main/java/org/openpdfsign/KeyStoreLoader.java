@@ -12,6 +12,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -99,6 +100,33 @@ public class KeyStoreLoader {
         byte[] bytes = bos.toByteArray();
         return bytes;
     }
+
+    public static byte[] loadFromKeystore(Path keystorePath, char[] keystorePassphrase) throws IOException, KeyStoreException, KeyIsNeededException {
+        byte[] keystore = Files.readAllBytes(keystorePath);
+
+        //JKS - load as is
+        try {
+            KeyStore jks = KeyStore.getInstance("JKS");
+            jks.load(new ByteArrayInputStream(keystore), keystorePassphrase);
+            //try loading first key, check if password fits
+            String firstAlias = jks.aliases().nextElement();
+            if (firstAlias != null) {
+                jks.getKey(firstAlias, keystorePassphrase);
+            }
+            return keystore;
+        } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException e) {
+            //throw new RuntimeException(e);
+        } catch (IOException e) {
+            //correct type, invalid passphrase
+            throw new KeyIsNeededException();
+        } catch (UnrecoverableKeyException e) {
+            throw new KeyIsNeededException();
+        }
+
+
+        throw new KeyStoreException("keystore type currently unsupported, please open an issue");
+    }
+
 
     public static class KeyIsNeededException extends Exception {
 
