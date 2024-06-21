@@ -14,6 +14,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -74,10 +75,21 @@ public class CLIApplication {
                 correctPassphraseAvailable = true;
             } catch (KeyStoreLoader.KeyIsNeededException e) {
                 //load key from stdin if not provided
-                System.out.print("Please provide passphrase for private key file> ");
-                Scanner in = new Scanner(System.in);
-                String userPassphrase = in.nextLine();
-                passphrase = userPassphrase.toCharArray();
+                Console console = System.console();
+                if (console == null) {
+                    log.error("No console available. Falling back to Scanner.");
+                    System.out.print("Please provide passphrase for private key file> ");
+                    Scanner in = new Scanner(System.in);
+                    String userPassphrase = in.nextLine();
+                    passphrase = userPassphrase.toCharArray();
+                } else {
+                    passphrase = console.readPassword("Please provide passphrase for private key file> ");
+                }
+                if (passphrase == null || passphrase.length == 0) {
+                    System.out.println("Passphrase not provided, quitting.");
+                    System.exit(1);
+                    return;
+                }
             }
         }
 
