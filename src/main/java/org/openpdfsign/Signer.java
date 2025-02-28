@@ -1,10 +1,42 @@
 package org.openpdfsign;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
+
 import com.beust.jcommander.Strings;
+
 import eu.europa.esig.dss.enumerations.CertificationPermission;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.SignatureValue;
+import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -21,26 +53,6 @@ import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.openpdfsign.dss.PdfBoxNativeTableObjectFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.KeyStore;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
 
 @Slf4j
 public class Signer {
@@ -70,7 +82,7 @@ public class Signer {
         if (signingToken.getKeys().get(0) instanceof KSPrivateKeyEntry) {
             keyAlias = ((KSPrivateKeyEntry) signingToken.getKeys().get(0)).getAlias();
         }
-        ;
+
         signatureParameters.setSigningCertificate(signingToken.getKey(keyAlias).getCertificate());
         signatureParameters.setCertificateChain(signingToken.getKey(keyAlias).getCertificateChain());
         if (params.getUseLT()) {
@@ -104,18 +116,15 @@ public class Signer {
                 break;
         }
 
-        if(!Strings.isStringEmpty(params.getLocation()))
-        {
+        if (!Strings.isStringEmpty(params.getLocation())) {
             signatureParameters.setLocation(params.getLocation());
         }
 
-        if(!Strings.isStringEmpty(params.getReason()))
-        {
+        if (!Strings.isStringEmpty(params.getReason())) {
             signatureParameters.setReason(params.getReason());
         }
 
-        if(!Strings.isStringEmpty(params.getContact()))
-        {
+        if (!Strings.isStringEmpty(params.getContact())) {
             signatureParameters.setContactInfo(params.getContact());
         }
         signatureParameters.setAppName("open-pdf-sign");
@@ -123,8 +132,8 @@ public class Signer {
         // Create common certificate verifier
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 
-        if (signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LT ||
-        signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LTA) {
+        if (signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LT
+                || signatureParameters.getSignatureLevel() == SignatureLevel.PAdES_BASELINE_LTA) {
             // Capability to download resources from AIA
             commonCertificateVerifier.setAIASource(new DefaultAIASource());
 
@@ -186,13 +195,9 @@ public class Signer {
                 fieldParameters.setPage(pageCount + (1 + params.getPage()));
                 pdDocument.close();
                 log.debug("PDF page count: " + pageCount);
-
             } else {
                 fieldParameters.setPage(params.getPage());
             }
-            fieldParameters.setOriginX(params.getLeft() * POINTS_PER_MM * 10f);
-            fieldParameters.setOriginY(params.getTop() * POINTS_PER_MM * 10f);
-            fieldParameters.setWidth(params.getWidth() * POINTS_PER_MM * 10f);
 
             // Get the SignedInfo segment that need to be signed.
             // respect local timezone
@@ -219,6 +224,55 @@ public class Signer {
 
             signatureParameters.setImageParameters(imageParameters);
 
+            float pageWidth;
+            float pageHeight;
+            try (PDDocument pdDocument = PDDocument.load(toSignDocument.openStream())) {
+                PDPage page = pdDocument.getPage(fieldParameters.getPage() - 1);
+                pageWidth = page.getMediaBox().getWidth();
+                pageHeight = page.getMediaBox().getHeight();
+            }
+
+            float originX = 1 * POINTS_PER_MM * 10f; // set default X coordinate of the signature block in cm as 1
+            float originY = 1 * POINTS_PER_MM * 10f; // set default Y coordinate of the signature block in cm as 1
+            fieldParameters.setWidth(params.getWidth() * POINTS_PER_MM * 10f);
+
+            float objectHeight;
+            float objectWidth;
+
+            // when image only
+            if (params.getImageOnly()) {
+                float imageHeight = ImageDimensionCalculator.getImageHeight(params.getImageFile(), params.getWidth());
+                objectHeight = imageHeight;
+                objectWidth = params.getWidth();
+            } else { // when table
+                PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
+                PDImageXObject imageXObject = PDImageXObject
+                        .createFromByteArray(pdDocument, Files.readAllBytes(Paths.get(params.getImageFile())), new File(params.getImageFile()).getName());
+
+                float tableDimensions[] = TableDimensionCalculator.calculateTableDimensions(fieldParameters, imageXObject);
+                objectHeight = tableDimensions[0] / (POINTS_PER_MM * 10f);
+                objectWidth = tableDimensions[1] / (POINTS_PER_MM * 10f);
+            }
+
+            // set origin coordinates, if provided
+            if (params.getRight() != Float.NEGATIVE_INFINITY) {
+                originX = pageWidth - ((params.getRight() + objectWidth) * POINTS_PER_MM * 10f);
+            }
+
+            if (params.getBottom() != Float.NEGATIVE_INFINITY) {
+                originY = pageHeight - ((params.getBottom() + objectHeight) * POINTS_PER_MM * 10f);
+            }
+
+            if (params.getTop() != Float.NEGATIVE_INFINITY) {
+                originY = params.getTop() * POINTS_PER_MM * 10f;
+            }
+
+            if (params.getLeft() != Float.NEGATIVE_INFINITY) {
+                originX = params.getLeft() * POINTS_PER_MM * 10f;
+            }
+
+            fieldParameters.setOriginX(originX);
+            fieldParameters.setOriginY(originY);
 
             PdfBoxNativeObjectFactory pdfBoxNativeObjectFactory = new PdfBoxNativeTableObjectFactory();
             service.setPdfObjFactory(pdfBoxNativeObjectFactory);
@@ -246,7 +300,7 @@ public class Signer {
         }
 
         //for encrypted PDF files, the passphrase is needed
-        if(!StringUtils.isEmpty(params.getPdfPassphrase())) {
+        if (!StringUtils.isEmpty(params.getPdfPassphrase())) {
             signatureParameters.setPasswordProtection(params.getPdfPassphrase().toCharArray());
         }
 

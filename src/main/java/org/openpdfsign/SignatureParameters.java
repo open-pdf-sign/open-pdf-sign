@@ -1,14 +1,15 @@
 package org.openpdfsign;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.EnumConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.LinkedList;
-import java.util.List;
 
 @Getter
 @Setter
@@ -27,11 +28,19 @@ public class SignatureParameters {
 
     @Parameter(required = false, names={"--top"}, description = "Y coordinate of the signature block in cm")
     @JsonProperty("top")
-    private float top = 1;
+    private float top = Float.NEGATIVE_INFINITY;
+    
+    @Parameter(required = false, names={"--bottom"}, description = "-Y coordinate of the signature block in cm")
+    @JsonProperty("bottom")
+    private float bottom = Float.NEGATIVE_INFINITY;
 
     @Parameter(required = false, names={"--left"}, description = "X coordinate of the signature block in cm")
     @JsonProperty("left")
-    private float left = 1;
+    private float left = Float.NEGATIVE_INFINITY;
+    
+    @Parameter(required = false, names={"--right"}, description = "-X coordinate of the signature block in cm")
+    @JsonProperty("right")
+    private float right = Float.NEGATIVE_INFINITY;
 
     @Parameter(required = false, names={"--width"}, description = "width of the signature block in cm")
     @JsonProperty("width")
