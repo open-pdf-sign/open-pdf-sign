@@ -10,6 +10,9 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
+import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
+import eu.europa.esig.dss.service.http.proxy.ProxyProperties;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
@@ -49,6 +52,12 @@ public class Signer {
     private static final float POINTS_PER_INCH = 72;
     private static final float POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
+    private static final String HTTP_PROXY_HOST = "http.proxyHost";
+    private static final String HTTPS_PROXY_HOST = "https.proxyHost";
+    private static final String HTTP_PROXY_PORT = "http.proxyPort";
+    private static final String HTTPS_PROXY_PORT = "https.proxyPort";
+
+
     public void signPdf(Path pdfFile, Path outputFile, byte[] keyStore, char[] keyStorePassword, OutputStream binaryOutput, SignatureParameters params) throws IOException {
         boolean visibleSignature = params.getPage() != null;
         //https://github.com/apache/pdfbox/blob/trunk/examples/src/main/java/org/apache/pdfbox/examples/signature/CreateVisibleSignature2.java
@@ -86,6 +95,9 @@ public class Signer {
         } else {
             signatureParameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
         }
+
+        // set Proxy HTTP if present
+        ProxyConfig proxyConfig = this.retrieveProxyConfig();
 
         //set certification level
         switch (params.getCertification()) {
@@ -235,11 +247,11 @@ public class Signer {
             compositeTSPSource.setTspSources(tspSources);
             if (params.getTSA().isEmpty()) {
                 Arrays.stream(Configuration.getInstance().getProperties().getStringArray("tsp_sources")).forEach(source -> {
-                    tspSources.put(source, new OnlineTSPSource(source));
+                    tspSources.put(source, this.buildTspSource(source, proxyConfig));
                 });
             } else {
                 params.getTSA().stream().forEach(source -> {
-                    tspSources.put(source, new OnlineTSPSource(source));
+                    tspSources.put(source, this.buildTspSource(source, proxyConfig));
                 });
             }
             service.setTspSource(compositeTSPSource);
@@ -270,5 +282,47 @@ public class Signer {
         } else {
             signedDocument.save(outputFile.toAbsolutePath().toString());
         }
+    }
+
+    private OnlineTSPSource buildTspSource(String source, ProxyConfig proxyConfig) {
+        TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
+        timestampDataLoader.setProxyConfig(proxyConfig);
+        return new OnlineTSPSource(source, timestampDataLoader);
+    }
+
+    private ProxyConfig retrieveProxyConfig() {
+        ProxyConfig proxyConfig = new ProxyConfig();
+
+        String httpProxyHost = System.getProperty(HTTP_PROXY_HOST);
+        String httpProxyPort = System.getProperty(HTTP_PROXY_PORT);
+        if (!Strings.isStringEmpty(httpProxyHost) && !Strings.isStringEmpty(httpProxyPort)) {
+            try {
+                int port = Integer.parseInt(httpProxyPort);
+                ProxyProperties proxyProperties = new ProxyProperties();
+                proxyProperties.setHost(httpProxyHost);
+                proxyProperties.setPort(port);
+                proxyConfig.setHttpProperties(proxyProperties);
+                log.debug("Http proxy present");
+            } catch (NumberFormatException e) {
+                log.error("ERROR : proxy http Port is not a number");
+            }
+        }
+
+        // set Proxy HTTPS if present
+        String httpsProxyHost = System.getProperty(HTTPS_PROXY_HOST);
+        String httpsProxyPort = System.getProperty(HTTPS_PROXY_PORT);
+        if (!Strings.isStringEmpty(httpsProxyHost) && !Strings.isStringEmpty(httpsProxyPort)) {
+            try {
+                int port = Integer.parseInt(httpsProxyPort);
+                ProxyProperties proxyProperties = new ProxyProperties();
+                proxyProperties.setHost(httpsProxyPort);
+                proxyProperties.setPort(port);
+                proxyConfig.setHttpsProperties(proxyProperties);
+                log.debug("Https proxy present");
+            } catch (NumberFormatException e) {
+                log.error("ERROR : proxy https Port is not a number");
+            }
+        }
+        return proxyConfig;
     }
 }
