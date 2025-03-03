@@ -25,7 +25,7 @@
         <org.apache.pdfbox-version>2.0.31</org.apache.pdfbox-version>
         <org.eclipse.jetty-version>9.4.53.v20231009</org.eclipse.jetty-version>
         <jackson.version>2.17.0</jackson.version>
-        <dss.version>6.0</dss.version>
+        <dss.version>6.1</dss.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
