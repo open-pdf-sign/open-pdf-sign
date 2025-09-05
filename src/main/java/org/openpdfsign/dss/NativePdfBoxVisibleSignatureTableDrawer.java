@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -94,6 +95,9 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                 float tableWidth = parameters.getFieldParameters().getWidth();
                 tableWidth = Math.max((imageColumnWidth + labelColumnWidth + 50), tableWidth);
 
+                //Font
+                PDType1Font boldFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+
                 // Build the table
                 boolean hasHint = tableParameters.getHint() != null;
                 myTableBuilder
@@ -106,19 +110,19 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                         .addRow(Row.builder()
                                 .add(ImageCell.builder().image(imageXObject).maxHeight(75)
                                         .verticalAlignment(VerticalAlignment.MIDDLE).horizontalAlignment(HorizontalAlignment.CENTER).rowSpan((hasHint ? 3 : 2)).build())
-                                .add(TextCell.builder().text(tableParameters.getLabelSignee()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                                .add(TextCell.builder().text(tableParameters.getLabelSignee()).font(boldFont).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                                 .add(TextCell.builder().text(tableParameters.getSignaturString()).build())
                                 .build())
                         .addRow(Row.builder()
                                 //.height(100f)
-                                .add(TextCell.builder().text(tableParameters.getLabelTimestamp()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                                .add(TextCell.builder().text(tableParameters.getLabelTimestamp()).font(boldFont).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                                 .add(TextCell.builder().text(tableParameters.getSignatureDate()).build())
                                 .build());
 
                 if (hasHint) {
                     myTableBuilder = myTableBuilder.addRow(Row.builder()
                             //.height(100f)
-                            .add(TextCell.builder().text(tableParameters.getLabelHint()).font(PDType1Font.HELVETICA_BOLD).horizontalAlignment(HorizontalAlignment.RIGHT).build())
+                            .add(TextCell.builder().text(tableParameters.getLabelHint()).font(boldFont).horizontalAlignment(HorizontalAlignment.RIGHT).build())
                             .add(TextCell.builder().text(tableParameters.getHint()).build())
                             .build());
                 }
@@ -161,7 +165,7 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
                 cs.saveGraphicsState();
                 tableDrawer.draw();
                 cs.transform(Matrix.getRotateInstance(
-                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getRotation())), 400, 200));
+                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getFieldParameters().getRotation())), 400, 200));
 
                 cs.restoreGraphicsState();
 
@@ -229,7 +233,7 @@ public class NativePdfBoxVisibleSignatureTableDrawer extends NativePdfBoxVisible
 
                 cs.drawImage(imageXObject, xAxis, yAxis, width, height);
                 cs.transform(Matrix.getRotateInstance(
-                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getRotation())), width, height));
+                        ((double) 360 - ImageRotationUtils.getRotation(parameters.getFieldParameters().getRotation())), width, height));
 
                 cs.restoreGraphicsState();
             }

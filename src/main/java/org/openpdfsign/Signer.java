@@ -15,6 +15,7 @@ import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.http.proxy.ProxyProperties;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
@@ -22,13 +23,14 @@ import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.JKSSignatureToken;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
@@ -181,7 +183,7 @@ public class Signer {
 
             //add new page, if user requested, force reopen document
             if (params.getAddPage() != null && params.getAddPage() == true) {
-                PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
+                PDDocument pdDocument = Loader.loadPDF(new RandomAccessReadBuffer(toSignDocument.openStream()));
                 PDPage newPage = new PDPage(pdDocument.getPage(pdDocument.getNumberOfPages() - 1).getMediaBox());
                 pdDocument.addPage(newPage);
                 Set<COSDictionary> cosSet = new HashSet<>();
@@ -193,7 +195,7 @@ public class Signer {
             }
 
             if (params.getPage() < 0) {
-                PDDocument pdDocument = PDDocument.load(toSignDocument.openStream());
+                PDDocument pdDocument = Loader.loadPDF(new RandomAccessReadBuffer(toSignDocument.openStream()));
                 int pageCount = pdDocument.getNumberOfPages();
                 fieldParameters.setPage(pageCount + (1 + params.getPage()));
                 pdDocument.close();
