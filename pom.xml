@@ -131,6 +131,11 @@
             <artifactId>dss-service</artifactId>
             <version>${dss.version}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-cms-object</artifactId>
+            <version>${dss.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.beust/jcommander -->
         <dependency>
             <groupId>com.beust</groupId>
