@@ -77,6 +77,14 @@ public class SignatureParameters {
     @JsonProperty("tsa")
     private List<String> TSA = new LinkedList<>();
 
+    @Parameter(required = false, names={"--tsa-username"}, description = "username for TSA server")
+    @JsonProperty("tsa-username")
+    private String tsaUsername;
+
+    @Parameter(required = false, names={"--tsa-password"}, description = "password for TSA server")
+    @JsonProperty("tsa-password")
+    private String tsaPassword;
+
     @Parameter(required = false, names = {"--timezone"}, description = "use specific timezone for time info, e.g. Europe/Vienna")
     @JsonProperty("timezone")
     private String timezone;

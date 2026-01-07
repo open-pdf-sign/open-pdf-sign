@@ -10,7 +10,9 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.http.commons.HostConnection;
 import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
+import eu.europa.esig.dss.service.http.commons.UserCredentials;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.http.proxy.ProxyProperties;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
@@ -249,11 +251,11 @@ public class Signer {
             compositeTSPSource.setTspSources(tspSources);
             if (params.getTSA().isEmpty()) {
                 Arrays.stream(Configuration.getInstance().getProperties().getStringArray("tsp_sources")).forEach(source -> {
-                    tspSources.put(source, this.buildTspSource(source, proxyConfig));
+                    tspSources.put(source, this.buildTspSource(source, proxyConfig, params.getTsaUsername(), params.getTsaPassword()));
                 });
             } else {
                 params.getTSA().stream().forEach(source -> {
-                    tspSources.put(source, this.buildTspSource(source, proxyConfig));
+                    tspSources.put(source, this.buildTspSource(source, proxyConfig, params.getTsaUsername(), params.getTsaPassword()));
                 });
             }
             service.setTspSource(compositeTSPSource);
@@ -286,9 +288,12 @@ public class Signer {
         }
     }
 
-    private OnlineTSPSource buildTspSource(String source, ProxyConfig proxyConfig) {
+    private OnlineTSPSource buildTspSource(String source, ProxyConfig proxyConfig, String tsaUsername, String tsaPassword) {
         TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
         timestampDataLoader.setProxyConfig(proxyConfig);
+        if (!StringUtils.isEmpty(tsaUsername) && !StringUtils.isEmpty(tsaPassword)) {
+            timestampDataLoader.addAuthentication(new HostConnection(), new UserCredentials(tsaUsername, tsaPassword.toCharArray()));
+        }
         return new OnlineTSPSource(source, timestampDataLoader);
     }
 

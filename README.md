@@ -112,9 +112,13 @@ Options:
     Y coordinate of the signature block in cm
     Default: 1.0
   --tsa
-    use specific time stamping authority as source (if multiple given, will
+    use specific time stamping authority (TSA) as source (if multiple given, will
     be used in given order as fallback)
     Default: []
+  --tsa-username
+    username for TSA server
+  --tsa-password
+    password for TSA server
   --version
     prints version of this program
   --width
