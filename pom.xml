@@ -22,7 +22,7 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <org.apache.pdfbox-version>3.0.5</org.apache.pdfbox-version>
+        <org.apache.pdfbox-version>3.0.6</org.apache.pdfbox-version>
         <org.eclipse.jetty-version>9.4.58.v20250814</org.eclipse.jetty-version>
         <jackson.version>2.20.0</jackson.version>
         <dss.version>6.3</dss.version>
